@@ -1,10 +1,10 @@
 {
   "name": "msdf-bmfont-xml",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Creates a BMFont compatible bitmap font of signed distance fields from a font file",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test-generate.js && open test/sheet0.png",
+    "test": "node test/test-generate.js && open test/font.0.png",
     "render": "node test/test-generate.js && devtool test/test-render.js -s"
   },
   "author": {
@@ -39,7 +39,8 @@
   "dependencies": {
     "canvas": "^1.4.0",
     "map-limit": "0.0.1",
-    "opentype.js": "^0.6.4"
+    "opentype.js": "^0.6.4",
+    "js2xmlparser": "^3.0.0"
   },
   "devDependencies": {
     "load-bmfont": "^1.2.3",

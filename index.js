@@ -1,3 +1,4 @@
+const dataProc = require('./lib/data_processor');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
@@ -14,6 +15,23 @@ const binaryLookup = {
 
 module.exports = generateBMFont;
 
+/**
+ * Creates a BMFont compatible bitmap font of signed distance fields from a font file
+ *
+ * @param {string} fontPath - Path to the input ttf font (otf and ttc not supported yet) 
+ * @param {Object} opt - Options object for generating bitmap font (Optional) :
+ *            outputType : font file format Avaliable: xml(default), json
+ *            filename : filename of both font file and font textures
+ *            fontSize : font size for generated textures (default 42)
+ *            charset : charset in generated font, could be array or string (default is Western)
+ *            textureWidth : Width of generated textures (default 512)
+ *            textureHeight : Height of generated textures (default 512)
+ *            distanceRange : distance range for computing signed distance field
+ *            fieldType : "msdf"(default), "sdf", "psdf"
+ *            roundDecimal  : rounded digits of the output font file. (Defaut is null)
+ * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
+ *
+ */
 function generateBMFont (fontPath, opt, callback) {
   const binName = binaryLookup[process.platform];
   if (binName === undefined) {
@@ -38,6 +56,8 @@ function generateBMFont (fontPath, opt, callback) {
   callback = callback || function () {};
   opt = opt || {};
   let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || defaultCharset;
+  const outputType = opt.outputType || "xml";
+  let filename = opt.filename;
   const fontSize = opt.fontSize || 42;
   const textureWidth = opt.textureWidth || 512;
   const textureHeight = opt.textureHeight || 512;
@@ -57,6 +77,7 @@ function generateBMFont (fontPath, opt, callback) {
   const context = canvas.getContext('2d');
   const packer = new MaxRectPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
+
   mapLimit(charset, 15, (char, cb) => {
     generateImage({
       binaryPath,
@@ -72,8 +93,18 @@ function generateBMFont (fontPath, opt, callback) {
     });
   }, (err, results) => {
     if (err) callback(err);
+
+    const os2 = font.tables.os2;
+    if(!filename) {
+      const name = font.tables.name.fullName;
+      filename = name[Object.getOwnPropertyNames(name)[0]];
+      console.log(`Use font-face as filename : ${filename}`);
+    }
+    let pages = [];
+
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
+      pages.push(`${filename}.${index}.png`);
       if(fieldType === "msdf") {
         context.fillStyle = '#000000';
         context.fillRect(0, 0, canvas.width, canvas.height);
@@ -90,7 +121,10 @@ function generateBMFont (fontPath, opt, callback) {
         charData.page = index;
         chars.push(rect.data.fontData);
       });
-      return canvas.toBuffer();
+      return {
+        filename: `${filename}.${index}.png`,
+        texture: canvas.toBuffer()
+      };
     });
     const kernings = [];
     charset.forEach(first => {
@@ -106,13 +140,11 @@ function generateBMFont (fontPath, opt, callback) {
       });
     });
 
-    const os2 = font.tables.os2;
-    const name = font.tables.name.fullName;
     const fontData = {
-      pages: [],
+      pages,
       chars,
       info: {
-        face: name[Object.getOwnPropertyNames(name)[0]],
+        face: filename,
         size: fontSize,
         bold: 0,
         italic: 0,
@@ -138,8 +170,11 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if(roundDecimal !== null) roundAllValue(fontData, roundDecimal);
-    callback(null, textures, fontData);
+    if(roundDecimal !== null) dataProc.roundAllValue(fontData, roundDecimal);
+    let fontFile = {};
+    fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
+    fontFile.data = dataProc.stringify(fontData, outputType);
+    callback(null, textures, fontFile);
   });
 }
 
@@ -210,8 +245,8 @@ function generateImage (opt, callback) {
   let xOffset = -bBox.left + pad;
   let yOffset = -bBox.bottom + pad;
   if (roundDecimal != null) {
-    xOffset = roundNumber(xOffset, roundDecimal);
-    yOffset = roundNumber(yOffset, roundDecimal);
+    xOffset = dataProc.roundNumber(xOffset, roundDecimal);
+    yOffset = dataProc.roundNumber(yOffset, roundDecimal);
   }
   let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
@@ -265,29 +300,3 @@ function generateImage (opt, callback) {
   });
 }
 
-function roundAllValue (obj, decimal = 0) {
-  Object.keys(obj).forEach(key => {
-    if (typeof(obj[key]) === "object" && obj[key] !== null) {
-      roundAllValue (obj[key], decimal);
-    } else if(isNumeric(obj[key])) {
-      obj[key] = roundNumber(obj[key], decimal);
-    }
-  });
-}
-
-function isNumeric (n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-function roundNumber(num, scale) {
-  if(!("" + num).includes("e")) {
-    return +(Math.round(num + "e+" + scale)  + "e-" + scale);
-  } else {
-    const arr = ("" + num).split("e");
-    let sig = ""
-    if(+arr[1] + scale > 0) {
-      sig = "+";
-    }
-    return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
-  }
-}
