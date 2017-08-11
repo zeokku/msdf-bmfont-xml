@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
-  fieldType: "msdf",
+  fieldType: "sdf",
+  fontSize: 64,
   distanceRange: 5,
   roundDecimal: 1
 };

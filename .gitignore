@@ -5,3 +5,4 @@ test/*.json
 test/*.png
 .vscode/
 .eslintrc*
+package-lock.json
