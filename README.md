@@ -7,6 +7,8 @@ Converts a `.ttf` font file into multichannel signed distance fields, then outpu
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
 This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
 
+![Preview image](https://github.com/soimy/msdf-bmfont-xml/blob/bmfont-xml-output/msdf-bmfont-xml.png)
+
 ## Install
 
 ```bash
@@ -67,7 +69,12 @@ generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
 Renders a bitmap font from the font at `fontPath` with optional `opt` settings, triggering `callback` on complete.
 
 Options:
-- `outputType` (String|Array)
+- `outputType` (String)
+  - type of output font file. Defaults to `xml`
+    - `xml` a BMFont standard .fnt file which is wildly supported. 
+    - `json` a JSON file compatible with [Hiero](https://github.com/libgdx/libgdx/wiki/Hiero)
+- `filename` (String)
+  - filename of both font file and font atlas. If omited, font face name is used.
 - `charset` (String|Array)
   - the characters to include in the bitmap font. Defaults to all ASCII printable characters. 
 - `fontSize` (Number)
@@ -83,12 +90,18 @@ Options:
     - `psdf` monochrome signed pseudo-distance field
 - `distanceRange` (Number)
   - the width of the range around the shape between the minimum and maximum representable signed distance in pixels, defaults to `3`
+- `roundDecimal` (Number)
+  - rounded digits of the output font metics. For `xml` output, `roundDecimal: 0` recommended.
 
 The `callback` is called with the arguments `(error, textures, font)`
 
 - `error` on success will be null/undefined
-- `textures` an array of Buffers, each containing the PNG data of one texture sheet
+- `textures` an array of js objects of texture spritesheet.
+  - `textures[index].filename` Spritesheet filename 
+  - `textures[index].texture` Image Buffers, containing the PNG data of one texture sheet
 - `font` an object containing the BMFont data, to be used to render the font
+  - `font.filename` font filename
+  - `font.data` stringified xml\json data to be written to disk
 
 Since `opt` is optional, you can specify `callback` as the second argument.
 
