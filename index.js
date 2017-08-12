@@ -2,7 +2,7 @@ const dataProc = require('./lib/data_processor');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
-const MaxRectPacker = require('./lib/maxrectpacker');
+const MaxRectsPacker = require('maxrects-packer');
 const Canvas = require('canvas');
 const path = require('path');
 
@@ -75,7 +75,7 @@ function generateBMFont (fontPath, opt, callback) {
   }
   const canvas = new Canvas(textureWidth, textureHeight);
   const context = canvas.getContext('2d');
-  const packer = new MaxRectPacker(textureWidth, textureHeight, texturePadding);
+  const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
 
   mapLimit(charset, 15, (char, cb) => {

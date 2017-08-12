@@ -6,4 +6,3 @@ test/*.fnt
 test/*.png
 .vscode/
 .eslintrc*
-package-lock.json
