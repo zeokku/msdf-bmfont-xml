@@ -1,6 +1,7 @@
 # msdf-bmfont-xml
 
-[![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
+[![Build Status](https://travis-ci.org/soimy/msdf-bmfont-xml.svg?branch=master)](https://travis-ci.org/soimy/msdf-bmfont-xml)
+[![npm version](https://badge.fury.io/js/msdf-bmfont-xml.svg)](https://badge.fury.io/js/msdf-bmfont-xml)
 
 Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and a xml(.fnt} or json representation of an AngelCode BMfont.
 
