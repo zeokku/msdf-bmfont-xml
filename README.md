@@ -1,8 +1,8 @@
-# msdf-bmfont
+# msdf-bmfont-xml
 
 [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
-Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and a json representation of an AngelCode BMfont.
+Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and a xml(.fnt} or json representation of an AngelCode BMfont.
 
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
 This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
@@ -10,7 +10,7 @@ This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to genera
 ## Install
 
 ```bash
-$ npm install msdf-bmfont
+$ npm install msdf-bmfont-xml
 ```
 
 Unless previously installed you'll _need_ __Cairo__, since [node-canvas](https://github.com/Automattic/node-canvas) depends on it. For system-specific installation view the [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
@@ -31,18 +31,17 @@ Windows | [Instructions on the node-canvas wiki](https://github.com/Automattic/n
 
 Writing the distance fields and font data to disk:
 ```js
-const generateBMFont = require('msdf-bmfont');
+const generateBMFont = require('msdf-bmfont-xml');
 const fs = require('fs');
 
 generateBMFont('Some-Font.ttf', (error, textures, font) => {
   if (error) throw error;
-  textures.forEach((sheet, index) => {
-    font.pages.push(`sheet${index}.png`);
-    fs.writeFile(`sheet${index}.png`, sheet, (err) => {
+  textures.forEach((texture, index) => {
+    fs.writeFile(texture.filename, texture.texture, (err) => {
       if (err) throw err;
     });
   });
-  fs.writeFile('font.json', JSON.stringify(font), (err) => {
+  fs.writeFile(font.filename, font.data, (err) => {
     if (err) throw err;
   });
 });
@@ -68,6 +67,7 @@ generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
 Renders a bitmap font from the font at `fontPath` with optional `opt` settings, triggering `callback` on complete.
 
 Options:
+- `outputType` (String|Array)
 - `charset` (String|Array)
   - the characters to include in the bitmap font. Defaults to all ASCII printable characters. 
 - `fontSize` (Number)

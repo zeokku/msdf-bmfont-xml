@@ -1,14 +1,14 @@
 {
   "name": "msdf-bmfont-xml",
   "version": "2.0.0",
-  "description": "Creates a BMFont compatible bitmap font of signed distance fields from a font file",
+  "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test-generate.js && open test/font.0.png",
+    "test": "node test/test-generate.js",
     "render": "node test/test-generate.js && devtool test/test-render.js -s"
   },
   "author": {
-    "name": "Yiming Shen",
+    "name": "YM Shen",
     "email": "soimy@163.com",
     "url": "https://github.com/soimy"
   },
