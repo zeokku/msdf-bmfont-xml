@@ -146,6 +146,7 @@ function generateBMFont (fontPath, opt, callback) {
       chars,
       info: {
         face: filename,
+        type: fieldType,
         size: fontSize,
         bold: 0,
         italic: 0,
