@@ -288,7 +288,7 @@ function generateImage (opt, callback) {
           width: width,
           height: height,
           xoffset: bBox.left - pad,
-          yoffset: bBox.bottom - pad + baseline,
+          yoffset: bBox.bottom + pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
