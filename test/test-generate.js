@@ -3,21 +3,23 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
+  outputType: "xml",
+  filename: "font",
   fieldType: "msdf",
+  fontSize: 42,
   distanceRange: 5,
   roundDecimal: 0
 };
-generateBMFont(path.join(__dirname, 'Dimbo_R.ttf'), opt, (error, textures, font) => {
+generateBMFont(path.join(__dirname, 'DIN_CB.ttf'), opt , (error, textures, font) => {
   if (error) throw error;
-  textures.forEach((sheet, index) => {
-    font.pages.push(`sheet${index}.png`);
-    fs.writeFile(path.join(__dirname, `sheet${index}.png`), sheet, (err) => {
+  textures.forEach((texture, index) => {
+    fs.writeFile(path.join(__dirname, texture.filename), texture.texture, (err) => {
       if (err) throw err;
-      console.log('wrote spritesheet', index);
+      console.log('wrote spritesheet[', index, '] : ', texture.filename);
     });
   });
-  fs.writeFile(path.join(__dirname, 'font.json'), JSON.stringify(font), (err) => {
+  fs.writeFile(path.join(__dirname, font.filename), font.data, (err) => {
     if (err) throw err;
-    console.log('wrote font file');
+    console.log('wrote font file        : ', font.filename);
   });
 });

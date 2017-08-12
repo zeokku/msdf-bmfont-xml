@@ -1,16 +1,16 @@
 {
-  "name": "msdf-bmfont",
-  "version": "1.0.1",
-  "description": "Creates a bitmap font of signed distance fields from a font file",
+  "name": "msdf-bmfont-xml",
+  "version": "2.0.0",
+  "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test-generate.js && open test/sheet0.png",
+    "test": "node test/test-generate.js",
     "render": "node test/test-generate.js && devtool test/test-render.js -s"
   },
   "author": {
-    "name": "Ari Lotter",
-    "email": "arilotter@gmail.com",
-    "url": "https://github.com/arilotter"
+    "name": "YM Shen",
+    "email": "soimy@163.com",
+    "url": "https://github.com/soimy"
   },
   "keywords": [
     "bmfont",
@@ -29,24 +29,24 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/Jam3/msdf-bmfont.git"
+    "url": "git://github.com/soimy/msdf-bmfont-xml.git"
   },
-  "homepage": "https://github.com/Jam3/msdf-bmfont",
+  "homepage": "https://github.com/soimy/msdf-bmfont-xml",
   "bugs": {
-    "url": "https://github.com/Jam3/msdf-bmfont/issues"
+    "url": "https://github.com/soimy/msdf-bmfont-xml/issues"
   },
   "license": "MIT",
   "dependencies": {
     "canvas": "^1.4.0",
     "map-limit": "0.0.1",
-    "multi-bin-packer": "^1.1.3",
+    "maxrects-packer": "^1.0.2",
+    "js2xmlparser": "^3.0.0",
     "opentype.js": "^0.6.4"
   },
   "devDependencies": {
     "load-bmfont": "^1.2.3",
-    "object-assign": "^4.1.0",
     "run-parallel": "^1.1.6",
-    "three": "^0.79.0",
-    "three-bmfont-text": "^2.1.0"
+    "three": "^0.86.0",
+    "three-bmfont-text": "^2.2.1"
   }
 }

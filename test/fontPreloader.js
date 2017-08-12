@@ -15,14 +15,14 @@ module.exports = function (cb = noop) {
   }
   parallel({
     texture: (next) => {
-      var texture = new THREE.TextureLoader().load(path.join(__dirname, 'sheet0.png'), () => {
+      var texture = new THREE.TextureLoader().load(path.join(__dirname, 'font.0.png'), () => {
         next(null, texture);
       }, noop, () => {
         next(new Error('Could not load font image'));
       });
     },
     font: (next) => {
-      loadBmfont(path.join(__dirname, 'font.json'), (err, font) => {
+      loadBmfont(path.join(__dirname, 'font.fnt'), (err, font) => {
         if (err) return next(err);
         next(null, font);
       });

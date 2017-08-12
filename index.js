@@ -1,7 +1,8 @@
+const dataProc = require('./lib/data_processor');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
-const MultiBinPacker = require('multi-bin-packer');
+const MaxRectsPacker = require('maxrects-packer');
 const Canvas = require('canvas');
 const path = require('path');
 
@@ -9,11 +10,29 @@ const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUV
 
 const binaryLookup = {
   darwin: 'msdfgen.osx',
-  win32: 'msdfgen.exe'
+  win32: 'msdfgen.exe',
+  linux: 'msdfgen.linux'
 };
 
 module.exports = generateBMFont;
 
+/**
+ * Creates a BMFont compatible bitmap font of signed distance fields from a font file
+ *
+ * @param {string} fontPath - Path to the input ttf font (otf and ttc not supported yet) 
+ * @param {Object} opt - Options object for generating bitmap font (Optional) :
+ *            outputType : font file format Avaliable: xml(default), json
+ *            filename : filename of both font file and font textures
+ *            fontSize : font size for generated textures (default 42)
+ *            charset : charset in generated font, could be array or string (default is Western)
+ *            textureWidth : Width of generated textures (default 512)
+ *            textureHeight : Height of generated textures (default 512)
+ *            distanceRange : distance range for computing signed distance field
+ *            fieldType : "msdf"(default), "sdf", "psdf"
+ *            roundDecimal  : rounded digits of the output font file. (Defaut is null)
+ * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
+ *
+ */
 function generateBMFont (fontPath, opt, callback) {
   const binName = binaryLookup[process.platform];
   if (binName === undefined) {
@@ -38,6 +57,8 @@ function generateBMFont (fontPath, opt, callback) {
   callback = callback || function () {};
   opt = opt || {};
   let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || defaultCharset;
+  const outputType = opt.outputType || "xml";
+  let filename = opt.filename;
   const fontSize = opt.fontSize || 42;
   const textureWidth = opt.textureWidth || 512;
   const textureHeight = opt.textureHeight || 512;
@@ -55,8 +76,9 @@ function generateBMFont (fontPath, opt, callback) {
   }
   const canvas = new Canvas(textureWidth, textureHeight);
   const context = canvas.getContext('2d');
-  const packer = new MultiBinPacker(textureWidth, textureHeight, texturePadding);
+  const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
+
   mapLimit(charset, 15, (char, cb) => {
     generateImage({
       binaryPath,
@@ -64,17 +86,28 @@ function generateBMFont (fontPath, opt, callback) {
       char,
       fontSize,
       fieldType,
-      distanceRange
+      distanceRange,
+      roundDecimal
     }, (err, res) => {
       if (err) return cb(err);
       cb(null, res);
     });
   }, (err, results) => {
     if (err) callback(err);
+
+    const os2 = font.tables.os2;
+    if(!filename) {
+      const name = font.tables.name.fullName;
+      filename = name[Object.getOwnPropertyNames(name)[0]];
+      console.log(`Use font-face as filename : ${filename}`);
+    }
+    let pages = [];
+
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
-      if(fieldType == "msdf") {
-        context.fillStyle = '#ffffff';
+      pages.push(`${filename}.${index}.png`);
+      if(fieldType === "msdf") {
+        context.fillStyle = '#000000';
         context.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -89,7 +122,10 @@ function generateBMFont (fontPath, opt, callback) {
         charData.page = index;
         chars.push(rect.data.fontData);
       });
-      return canvas.toBuffer();
+      return {
+        filename: `${filename}.${index}.png`,
+        texture: canvas.toBuffer()
+      };
     });
     const kernings = [];
     charset.forEach(first => {
@@ -105,13 +141,11 @@ function generateBMFont (fontPath, opt, callback) {
       });
     });
 
-    const os2 = font.tables.os2;
-    const name = font.tables.name.fullName;
     const fontData = {
-      pages: [],
+      pages,
       chars,
       info: {
-        face: name[Object.getOwnPropertyNames(name)[0]],
+        face: filename,
         size: fontSize,
         bold: 0,
         italic: 0,
@@ -137,13 +171,16 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if(roundDecimal != null) RoundAllValue(fontData, roundDecimal);
-    callback(null, textures, fontData);
+    if(roundDecimal !== null) dataProc.roundAllValue(fontData, roundDecimal);
+    let fontFile = {};
+    fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
+    fontFile.data = dataProc.stringify(fontData, outputType);
+    callback(null, textures, fontFile);
   });
 }
 
 function generateImage (opt, callback) {
-  const {binaryPath, font, char, fontSize, fieldType, distanceRange} = opt;
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -166,6 +203,7 @@ function generateImage (opt, callback) {
   contours.push(currentContour);
 
   let shapeDesc = '';
+  let firstCommand = true;
   contours.forEach(contour => {
     shapeDesc += '{';
     const lastIndex = contour.length - 1;
@@ -180,10 +218,18 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        bBox.left = Math.min(bBox.left, command.x);
-        bBox.bottom = Math.min(bBox.bottom, command.y);
-        bBox.right = Math.max(bBox.right, command.x);
-        bBox.top = Math.max(bBox.top, command.y);
+        if (firstCommand) {
+          bBox.left = command.x;
+          bBox.bottom = command.y;
+          bBox.right = command.x;
+          bBox.top = command.y;
+          firstCommand = false;
+        } else  {
+          bBox.left = Math.min(bBox.left, command.x);
+          bBox.bottom = Math.min(bBox.bottom, command.y);
+          bBox.right = Math.max(bBox.right, command.x);
+          bBox.top = Math.max(bBox.top, command.y);
+        }
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -197,8 +243,13 @@ function generateImage (opt, callback) {
   const pad = distanceRange;
   let width = Math.round(bBox.right - bBox.left) + pad + pad;
   let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
+  let xOffset = -bBox.left + pad;
   let yOffset = -bBox.bottom + pad;
-  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  if (roundDecimal != null) {
+    xOffset = dataProc.roundNumber(xOffset, roundDecimal);
+    yOffset = dataProc.roundNumber(yOffset, roundDecimal);
+  }
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
@@ -217,8 +268,7 @@ function generateImage (opt, callback) {
       }
     } else {
       for (let i = 0; i < rawImageData.length; i += channelCount) {
-        var sdfValue = 255 - rawImageData[i];
-        pixels.push(sdfValue, sdfValue, sdfValue, sdfValue); // make monochrome w/ alpha
+        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], rawImageData[i]); // make monochrome w/ alpha
       }
     }
     let imageData;
@@ -238,7 +288,7 @@ function generateImage (opt, callback) {
           id: char.charCodeAt(0),
           width: width,
           height: height,
-          xoffset: 0,
+          xoffset: bBox.left - pad,
           yoffset: bBox.bottom + pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
@@ -251,36 +301,3 @@ function generateImage (opt, callback) {
   });
 }
 
-function RoundAllValue (obj, decimal = 0) {
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (obj[key] !== null) {
-        if (typeof(obj[key]) == "object") {
-          RoundAllValue (obj[key], decimal);
-        } else {
-          if(isNumeric(obj[key])) {
-            var oldNumber = obj[key];
-            obj[key] = roundNumber(obj[key], decimal);
-          }
-        }
-      }
-    }
-  }
-}
-
-function isNumeric (n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-function roundNumber(num, scale) {
-  if(!("" + num).includes("e")) {
-    return +(Math.round(num + "e+" + scale)  + "e-" + scale);
-  } else {
-    var arr = ("" + num).split("e");
-    var sig = ""
-    if(+arr[1] + scale > 0) {
-      sig = "+";
-    }
-    return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
-  }
-}
