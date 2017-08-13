@@ -62,7 +62,7 @@ function generateBMFont (fontPath, opt, callback) {
   const fontSize = opt.fontSize || 42;
   const textureWidth = opt.textureWidth || 512;
   const textureHeight = opt.textureHeight || 512;
-  const texturePadding = opt.texturePadding || 2;
+  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 2;
   const distanceRange = opt.distanceRange || 3;
   const fieldType = opt.fieldType || 'msdf';
   const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
@@ -241,7 +241,7 @@ function generateImage (opt, callback) {
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const baseline = font.tables.os2.sTypoAscender * (fontSize / font.unitsPerEm);
-  const pad = distanceRange;
+  const pad = distanceRange >> 1;
   let width = Math.round(bBox.right - bBox.left) + pad + pad;
   let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
   let xOffset = -bBox.left + pad;
