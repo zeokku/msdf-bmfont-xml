@@ -14,10 +14,10 @@ const opt = {
   textureHeight: 1024,
   roundDecimal: 0,
   // debug: true,
-  // progress: true
+  progress: true
 };
 
-fs.readFile(path.join(__dirname, 'charset.input.txt'), 'utf8', (error, data) => {
+fs.readFile(path.join(__dirname, 'charset.gb2312.txt'), 'utf8', (error, data) => {
   if (error) throw error;
   if (data) opt.charset = data;
   generateBMFont(path.join(__dirname, 'fonts/FZZDHS.TTF'), opt , (error, textures, font) => {

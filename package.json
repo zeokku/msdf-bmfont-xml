@@ -38,11 +38,11 @@
   "license": "MIT",
   "dependencies": {
     "canvas": "^1.4.0",
+    "cli-progress": "^1.4.1",
     "js2xmlparser": "^3.0.0",
     "map-limit": "0.0.1",
     "maxrects-packer": "^1.0.2",
-    "opentype.js": "^0.6.4",
-    "progress": "^2.0.0"
+    "opentype.js": "^0.6.4"
   },
   "devDependencies": {
     "handlebars": "^4.0.10",

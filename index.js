@@ -5,7 +5,7 @@ const mapLimit = require('map-limit');
 const MaxRectsPacker = require('maxrects-packer');
 const Canvas = require('canvas');
 const path = require('path');
-const ProgressBar = require('progress');
+const ProgressBar = require('cli-progress');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 
@@ -83,23 +83,20 @@ function generateBMFont (fontPath, opt, callback) {
   const context = canvas.getContext('2d');
   const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
-  let barGylphs;
-  if (progress) {
-    barGylphs = new ProgressBar('Generating Glyphs [:bar] :percent(:current/:total) :etas', {
-      complete: '=',
-      incomplete: ' ',
-      head: '>',
-      width: 40,
-      renderThrottle: 0,
-      clear: true,
-      total: charset.length
-    });
-
-  }
-
+  
   charset = charset.filter((e, i, self) => {
     return i == self.indexOf(e);
   }); // Remove duplicate
+
+  let bar;
+  if (progress){
+    bar = new ProgressBar.Bar({
+      format: "Genrating [{bar}] {percentage}%({value}/{total}) {duration}s",
+      clearOnComplete: true
+    }, ProgressBar.Presets.shades_classic); 
+    bar.start(charset.length, 0);
+  } // Initializing progress bar
+
   mapLimit(charset, 15, (char, cb) => {
     generateImage({
       binaryPath,
@@ -111,11 +108,12 @@ function generateBMFont (fontPath, opt, callback) {
       roundDecimal
     }, (err, res) => {
       if (err) return cb(err);
-      if (progress) barGylphs.tick();
+      if (progress) bar.increment();
       cb(null, res);
     });
   }, (err, results) => {
     if (err) callback(err);
+    if (progress) bar.stop();
 
     const os2 = font.tables.os2;
     const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
@@ -207,6 +205,7 @@ function generateBMFont (fontPath, opt, callback) {
     let fontFile = {};
     fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
     fontFile.data = dataProc.stringify(fontData, outputType);
+    if (progress) console.log("\nGeneration complete!\n");
     callback(null, textures, fontFile);
   });
 }
