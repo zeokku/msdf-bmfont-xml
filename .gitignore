@@ -1,8 +1,9 @@
 .DS_Store
 node_modules/
 npm-debug.log
-test/*.json
-test/*.fnt
-test/*.png
+test/output/*.json
+test/output/*.fnt
+test/output/*.png
+test/output/*.svg
 .vscode/
 .eslintrc*
