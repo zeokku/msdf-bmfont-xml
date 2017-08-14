@@ -62,7 +62,7 @@ function generateBMFont (fontPath, opt, callback) {
   const fontSize = opt.fontSize || 42;
   const textureWidth = opt.textureWidth || 512;
   const textureHeight = opt.textureHeight || 512;
-  const texturePadding = opt.texturePadding || 2;
+  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 2;
   const distanceRange = opt.distanceRange || 3;
   const fieldType = opt.fieldType || 'msdf';
   const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
@@ -160,7 +160,7 @@ function generateBMFont (fontPath, opt, callback) {
       },
       common: {
         lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
-        base: os2.sTypoAscender * (fontSize / font.unitsPerEm) + distanceRange,
+        base: os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1),
         scaleW: textureWidth,
         scaleH: textureHeight,
         pages: packer.bins.length,
@@ -186,12 +186,7 @@ function generateImage (opt, callback) {
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
   let currentContour = [];
-  let bBox = {
-    left: 0,
-    bottom: 0,
-    right: 0,
-    top: 0
-  };
+  const bBox = glyph.getPath(0, 0, fontSize).getBoundingBox();
   commands.forEach(command => {
     if (command.type === 'M') { // new contour
       if (currentContour.length > 0) {
@@ -204,14 +199,16 @@ function generateImage (opt, callback) {
   contours.push(currentContour);
 
   let shapeDesc = '';
-  let firstCommand = true;
   contours.forEach(contour => {
     shapeDesc += '{';
     const lastIndex = contour.length - 1;
+    let _x, _y;
     contour.forEach((command, index) => {
+      dataProc.roundAllValue(command, 3);
       if (command.type === 'Z') {
-        // shapeDesc += `${contour[0].x}, ${contour[0].y}`;
-        // adding the last point breaks it??!??!
+        if(contour[0].x !== _x || contour[0].y !== _y) {
+          shapeDesc += '# ';
+        }
       } else {
         if (command.type === 'C') {
           shapeDesc += `(${command.x1}, ${command.y1}; ${command.x2}, ${command.y2}); `;
@@ -219,21 +216,11 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        if (firstCommand) {
-          bBox.left = command.x;
-          bBox.bottom = command.y;
-          bBox.right = command.x;
-          bBox.top = command.y;
-          firstCommand = false;
-        } else  {
-          bBox.left = Math.min(bBox.left, command.x);
-          bBox.bottom = Math.min(bBox.bottom, command.y);
-          bBox.right = Math.max(bBox.right, command.x);
-          bBox.top = Math.max(bBox.top, command.y);
+        _x = command.x;
+        _y = command.y;
+        if (index !== lastIndex) {
+          shapeDesc += '; ';
         }
-      }
-      if (index !== lastIndex) {
-        shapeDesc += '; ';
       }
     });
     shapeDesc += '}';
@@ -241,11 +228,11 @@ function generateImage (opt, callback) {
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const baseline = font.tables.os2.sTypoAscender * (fontSize / font.unitsPerEm);
-  const pad = distanceRange;
-  let width = Math.round(bBox.right - bBox.left) + pad + pad;
-  let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
-  let xOffset = -bBox.left + pad;
-  let yOffset = -bBox.bottom + pad;
+  const pad = distanceRange >> 1;
+  let width = Math.round(bBox.x2 - bBox.x1) + pad + pad;
+  let height = Math.round(bBox.y2 - bBox.y1) + pad + pad;
+  let xOffset = Math.round(-bBox.x1) + pad;
+  let yOffset = Math.round(-bBox.y1) + pad;
   if (roundDecimal != null) {
     xOffset = dataProc.roundNumber(xOffset, roundDecimal);
     yOffset = dataProc.roundNumber(yOffset, roundDecimal);
@@ -289,8 +276,8 @@ function generateImage (opt, callback) {
           id: char.charCodeAt(0),
           width: width,
           height: height,
-          xoffset: bBox.left - pad,
-          yoffset: bBox.bottom + pad + baseline,
+          xoffset: Math.round(bBox.x1) - pad,
+          yoffset: Math.round(bBox.y1) + pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
