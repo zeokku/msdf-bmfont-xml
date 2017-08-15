@@ -63,14 +63,14 @@ function generateBMFont (fontPath, opt, callback) {
   const fontSize = opt.fontSize || 42;
   const fontSpacing = opt.fontSpacing || [0, 0];
   const fontPadding = opt.fontPadding || [0, 0, 0, 0];
-  const textureWidth = opt.textureWidth || 512;
-  const textureHeight = opt.textureHeight || 512;
-  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 2;
-  const distanceRange = opt.distanceRange || 3;
+  const textureWidth = opt.textureSize[0] || 512;
+  const textureHeight = opt.textureSize[1] || 512;
+  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 1;
+  const distanceRange = opt.distanceRange || 4;
   const fieldType = opt.fieldType || 'msdf';
   const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
-  const progress = opt.progress || false;
-  const debug = opt.debug || false;
+  const progress = opt.progress || true;
+  const debug = opt.vector || false;
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {
     throw new TypeError('fieldType must be one of msdf, sdf, or psdf');
   }
