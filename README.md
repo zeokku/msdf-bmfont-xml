@@ -8,27 +8,20 @@ Converts a `.ttf` font file into multichannel signed distance fields, then outpu
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
 This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
 
-![Preview image](https://github.com/soimy/msdf-bmfont-xml/blob/bmfont-xml-output/msdf-bmfont-xml.png)
+![Preview image](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/msdf-bmfont-xml.png)
 
-## Install
+## Install as CLI
+```bash
+$ npm install msdf-bmfont-xml -g
+```
+Then you just need to call `msdf-bmfont` from console to generate font file.
+Type in `msdf-bmfont --help` for more detail usage,
+
+## Install as Module
 
 ```bash
 $ npm install msdf-bmfont-xml
 ```
-
-Unless previously installed you'll _need_ __Cairo__, since [node-canvas](https://github.com/Automattic/node-canvas) depends on it. For system-specific installation view the [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
-
-You can quickly install the dependencies by using the command for your OS:
-
-OS | Command
------ | -----
-OS X | `brew install pkg-config cairo libpng jpeg giflib`
-Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
-Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
-Solaris | `pkgin install cairo pkg-config xproto renderproto kbproto xextproto`
-Windows | [Instructions on the node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
-
-**El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
 
 ## Examples
 
@@ -93,6 +86,8 @@ Options:
   - the width of the range around the shape between the minimum and maximum representable signed distance in pixels, defaults to `3`
 - `roundDecimal` (Number)
   - rounded digits of the output font metics. For `xml` output, `roundDecimal: 0` recommended.
+- `vector` (Boolean)
+  - output a SVG Vector file for debugging. Defautls to `false`
 
 The `callback` is called with the arguments `(error, textures, font)`
 
