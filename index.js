@@ -3,7 +3,7 @@ const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
 const MaxRectsPacker = require('maxrects-packer');
-const Canvas = require('canvas');
+const Canvas = require('canvas-prebuilt');
 const path = require('path');
 const ProgressBar = require('cli-progress');
 
