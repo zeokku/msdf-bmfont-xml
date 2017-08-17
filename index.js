@@ -3,8 +3,9 @@ const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
 const MaxRectsPacker = require('maxrects-packer');
-const Canvas = require('canvas');
+const Canvas = require('canvas-prebuilt');
 const path = require('path');
+const ProgressBar = require('cli-progress');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 
@@ -60,12 +61,16 @@ function generateBMFont (fontPath, opt, callback) {
   const outputType = opt.outputType || "xml";
   let filename = opt.filename;
   const fontSize = opt.fontSize || 42;
-  const textureWidth = opt.textureWidth || 512;
-  const textureHeight = opt.textureHeight || 512;
-  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 2;
-  const distanceRange = opt.distanceRange || 3;
+  const fontSpacing = opt.fontSpacing || [0, 0];
+  const fontPadding = opt.fontPadding || [0, 0, 0, 0];
+  const textureWidth = opt.textureSize[0] || 512;
+  const textureHeight = opt.textureSize[1] || 512;
+  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 1;
+  const distanceRange = opt.distanceRange || 4;
   const fieldType = opt.fieldType || 'msdf';
   const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
+  const progress = opt.progress || true;
+  const debug = opt.vector || false;
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {
     throw new TypeError('fieldType must be one of msdf, sdf, or psdf');
   }
@@ -78,6 +83,19 @@ function generateBMFont (fontPath, opt, callback) {
   const context = canvas.getContext('2d');
   const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
+  
+  charset = charset.filter((e, i, self) => {
+    return i == self.indexOf(e);
+  }); // Remove duplicate
+
+  let bar;
+  if (progress){
+    bar = new ProgressBar.Bar({
+      format: "Genrating [{bar}] {percentage}%({value}/{total}) {duration}s",
+      clearOnComplete: true
+    }, ProgressBar.Presets.shades_classic); 
+    bar.start(charset.length, 0);
+  } // Initializing progress bar
 
   mapLimit(charset, 15, (char, cb) => {
     generateImage({
@@ -90,12 +108,15 @@ function generateBMFont (fontPath, opt, callback) {
       roundDecimal
     }, (err, res) => {
       if (err) return cb(err);
+      if (progress) bar.increment();
       cb(null, res);
     });
   }, (err, results) => {
     if (err) callback(err);
+    if (progress) bar.stop();
 
     const os2 = font.tables.os2;
+    const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
     if(!filename) {
       const name = font.tables.name.fullName;
       filename = name[Object.getOwnPropertyNames(name)[0]];
@@ -105,6 +126,7 @@ function generateBMFont (fontPath, opt, callback) {
 
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
+      let svg = "";
       pages.push(`${filename}.${index}.png`);
       if(fieldType === "msdf") {
         context.fillStyle = '#000000';
@@ -115,6 +137,11 @@ function generateBMFont (fontPath, opt, callback) {
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
           context.putImageData(rect.data.imageData, rect.x, rect.y);
+          if (debug) {
+            const x_woffset = rect.x - rect.data.fontData.xoffset + (distanceRange >> 1);
+            const y_woffset = rect.y - rect.data.fontData.yoffset + baseline + (distanceRange >> 1);
+            svg += font.charToGlyph(rect.data.fontData.char).getPath(x_woffset, y_woffset, fontSize).toSVG() + "\n";
+          }
         }
         const charData = rect.data.fontData;
         charData.x = rect.x;
@@ -122,10 +149,12 @@ function generateBMFont (fontPath, opt, callback) {
         charData.page = index;
         chars.push(rect.data.fontData);
       });
-      return {
+      let tex = {
         filename: `${filename}.${index}.png`,
         texture: canvas.toBuffer()
-      };
+      }
+      if (debug) tex.svg = svg;
+      return tex;
     });
     const kernings = [];
     charset.forEach(first => {
@@ -155,12 +184,12 @@ function generateBMFont (fontPath, opt, callback) {
         stretchH: 100,
         smooth: 1,
         aa: 1,
-        padding: [0, 0, 0, 0],
-        spacing: [texturePadding, texturePadding]
+        padding: fontPadding,
+        spacing: fontSpacing
       },
       common: {
         lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
-        base: os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1),
+        base: baseline,
         scaleW: textureWidth,
         scaleH: textureHeight,
         pages: packer.bins.length,
@@ -176,6 +205,7 @@ function generateBMFont (fontPath, opt, callback) {
     let fontFile = {};
     fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
     fontFile.data = dataProc.stringify(fontData, outputType);
+    if (progress) console.log("\nGeneration complete!\n");
     callback(null, textures, fontFile);
   });
 }
@@ -237,7 +267,7 @@ function generateImage (opt, callback) {
     xOffset = dataProc.roundNumber(xOffset, roundDecimal);
     yOffset = dataProc.roundNumber(yOffset, roundDecimal);
   }
-  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let command = `${binaryPath} ${fieldType} -reverseorder -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
@@ -261,9 +291,9 @@ function generateImage (opt, callback) {
     }
     let imageData;
     if (isNaN(channelCount) || !rawImageData.some(x => x !== 0)) { // if character is blank
-      console.warn(`no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
-      console.warn(command);
-      console.warn('---');
+      // console.warn(`no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
+      // console.warn(command);
+      // console.warn('---');
       width = 0;
       height = 0;
     } else {
@@ -274,6 +304,8 @@ function generateImage (opt, callback) {
         imageData,
         fontData: {
           id: char.charCodeAt(0),
+          index: glyph.index,
+          char: char,
           width: width,
           height: height,
           xoffset: Math.round(bBox.x1) - pad,
