@@ -230,7 +230,7 @@ function generateImage (opt, callback) {
   });
   contours.push(currentContour);
 
-  // utils.tolerance = 0.01;
+  utils.setTolerance(0.2, 1);
   let numFiltered = utils.filterContours(contours);
   if (numFiltered && debug)
     console.log(`${char} removed ${numFiltered} small contour(s)`);

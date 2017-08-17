@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const handlebars = require('handlebars');
 const args = require('commander');
-const dataProc = require('./lib/data_processor');
+const utils = require('./lib/utils');
 
 args
   .version('msdf-bmfont-xml v' + pjson.version)
@@ -27,7 +27,7 @@ args
   }).parse(process.argv);
 
 const opt = args.opts();
-dataProc.roundAllValue(opt); // Parse all number from string
+utils.roundAllValue(opt); // Parse all number from string
 const keys = Object.keys(opt)
 const padding = longestLength(keys) + 2;
 console.log("\nUsing following settings");
