@@ -1,4 +1,4 @@
-const dataProc = require('./lib/data_processor');
+const utils = require('./lib/utils');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
@@ -6,6 +6,7 @@ const MaxRectsPacker = require('maxrects-packer');
 const Canvas = require('canvas-prebuilt');
 const path = require('path');
 const ProgressBar = require('cli-progress');
+const fs = require('fs');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 
@@ -91,8 +92,8 @@ function generateBMFont (fontPath, opt, callback) {
   let bar;
   if (progress){
     bar = new ProgressBar.Bar({
-      format: "Genrating [{bar}] {percentage}%({value}/{total}) {duration}s",
-      clearOnComplete: true
+      format: "Genrating {percentage}%|{bar}| ({value}/{total}) {duration}s",
+      // clearOnComplete: true
     }, ProgressBar.Presets.shades_classic); 
     bar.start(charset.length, 0);
   } // Initializing progress bar
@@ -105,7 +106,8 @@ function generateBMFont (fontPath, opt, callback) {
       fontSize,
       fieldType,
       distanceRange,
-      roundDecimal
+      roundDecimal,
+      debug
     }, (err, res) => {
       if (err) return cb(err);
       if (progress) bar.increment();
@@ -201,17 +203,17 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if(roundDecimal !== null) dataProc.roundAllValue(fontData, roundDecimal);
+    if(roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal);
     let fontFile = {};
     fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
-    fontFile.data = dataProc.stringify(fontData, outputType);
+    fontFile.data = utils.stringify(fontData, outputType);
     if (progress) console.log("\nGeneration complete!\n");
     callback(null, textures, fontFile);
   });
 }
 
 function generateImage (opt, callback) {
-  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal} = opt;
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -228,33 +230,15 @@ function generateImage (opt, callback) {
   });
   contours.push(currentContour);
 
-  let shapeDesc = '';
-  contours.forEach(contour => {
-    shapeDesc += '{';
-    const lastIndex = contour.length - 1;
-    let _x, _y;
-    contour.forEach((command, index) => {
-      dataProc.roundAllValue(command, 3);
-      if (command.type === 'Z') {
-        if(contour[0].x !== _x || contour[0].y !== _y) {
-          shapeDesc += '# ';
-        }
-      } else {
-        if (command.type === 'C') {
-          shapeDesc += `(${command.x1}, ${command.y1}; ${command.x2}, ${command.y2}); `;
-        } else if (command.type === 'Q') {
-          shapeDesc += `(${command.x1}, ${command.y1}); `;
-        }
-        shapeDesc += `${command.x}, ${command.y}`;
-        _x = command.x;
-        _y = command.y;
-        if (index !== lastIndex) {
-          shapeDesc += '; ';
-        }
-      }
-    });
-    shapeDesc += '}';
-  });
+  // utils.tolerance = 0.01;
+  let numFiltered = utils.filterContours(contours);
+  if (numFiltered && debug)
+    console.log(`${char} removed ${numFiltered} small contour(s)`);
+  // let numReversed = utils.alignClockwise(contours, false);
+  // if (numReversed && debug)
+  //   console.log(`${char} found ${numReversed}/${contours.length} reversed contour(s)`);
+  let shapeDesc = utils.stringifyContours(contours);
+
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const baseline = font.tables.os2.sTypoAscender * (fontSize / font.unitsPerEm);
@@ -264,10 +248,10 @@ function generateImage (opt, callback) {
   let xOffset = Math.round(-bBox.x1) + pad;
   let yOffset = Math.round(-bBox.y1) + pad;
   if (roundDecimal != null) {
-    xOffset = dataProc.roundNumber(xOffset, roundDecimal);
-    yOffset = dataProc.roundNumber(yOffset, roundDecimal);
+    xOffset = utils.roundNumber(xOffset, roundDecimal);
+    yOffset = utils.roundNumber(yOffset, roundDecimal);
   }
-  let command = `${binaryPath} ${fieldType} -reverseorder -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
