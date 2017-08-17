@@ -58,20 +58,24 @@ function generateBMFont (fontPath, opt, callback) {
 
   callback = callback || function () {};
   opt = opt || {};
-  let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || defaultCharset;
-  const outputType = opt.outputType || "xml";
-  let filename = opt.filename;
-  const fontSize = opt.fontSize || 42;
-  const fontSpacing = opt.fontSpacing || [0, 0];
-  const fontPadding = opt.fontPadding || [0, 0, 0, 0];
-  const textureWidth = opt.textureSize[0] || 512;
-  const textureHeight = opt.textureSize[1] || 512;
-  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : 1;
-  const distanceRange = opt.distanceRange || 4;
-  const fieldType = opt.fieldType || 'msdf';
-  const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
+  const reuse = typeof opt.reuse === 'boolean' ? {} : opt.reuse.opt;
+  let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
+  const outputType = opt.outputType || reuse.outputType || "xml";
+  let filename = opt.filename || reuse.filename;
+  const fontSize = opt.fontSize || reuse.fontSize || 42;
+  const fontSpacing = opt.fontSpacing || reuse.fontSpacing || [0, 0];
+  const fontPadding = opt.fontPadding || reuse.fontPadding || [0, 0, 0, 0];
+  const textureWidth = opt.textureSize[0] || reuse.textureSize[0] || 512;
+  const textureHeight = opt.textureSize[1] || reuse.textureSize[1] || 512;
+  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : reuse.texturePadding || 1;
+  const distanceRange = opt.distanceRange || reuse.distanceRang || 4;
+  const fieldType = opt.fieldType || reuse.fieldType || 'msdf';
+  const roundDecimal = opt.roundDecimal || reuse.roundDecimal; // if no roudDecimal option, left null as-is
   const progress = opt.progress || true;
   const debug = opt.vector || false;
+  const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
+
+  // TODO: Validate options
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {
     throw new TypeError('fieldType must be one of msdf, sdf, or psdf');
   }

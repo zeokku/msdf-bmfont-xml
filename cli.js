@@ -22,6 +22,7 @@ args
   .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', 'msdf')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
+  .option('-u, --reuse [file.cfg]', 're-use font atlas and append new font', false)
   .action(function(file){
     fontFile = file;
   }).parse(process.argv);
@@ -46,6 +47,13 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
     console.warn('No valid charset file loaded, fallback to ASC-II');
   }
   if (data) opt.charset = data;
+  if (typeof opt.reuse !== 'boolean') {
+    if (!fs.existsSync(opt.reuse)) {
+      console.error('Re-use cfg file not found, aborting....');
+      process.exit(1);
+    }
+    opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
+  }
   generateBMFont(fontFile, opt, (error, textures, font) => {
     if (error) throw error;
     textures.forEach((texture, index) => {
@@ -76,6 +84,12 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
       if (err) throw err;
       console.log('wrote font file        : ', font.filename);
     });
+    if(opt.reuse === true) {
+      fs.writeFile(`${font.filename}.cfg`, font.reuse, (err) => {
+        if (err) throw err;
+        console.log('wrote cfg file         : ', `${font.filename}.cfg`);
+      });
+    }
   });
 });
 
