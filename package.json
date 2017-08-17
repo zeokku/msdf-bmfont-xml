@@ -1,6 +1,6 @@
 {
   "name": "msdf-bmfont-xml",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
