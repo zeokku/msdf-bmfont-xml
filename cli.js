@@ -14,7 +14,7 @@ args
   .arguments('<font_file>')
   .description('Creates a BMFont compatible bitmap font of signed distance fields from a font file')
   .option('-f, --output-type <format>', 'font file format: xml(default) | json', 'xml')
-  .option('-o, --filename <filename>', 'filename of both font file and font textures (defaut: font-face)')
+  .option('-o, --filename <atlas_path>', 'filename of font textures (defaut: font-face) font filename always set to font-face name')
   .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)', 42)
   .option('-i, --charset-file <charset>', 'user-specified charactors from text-file')
   .option('-m, --texture-size <w,h>', 'Width/Height of generated textures (default: 512,512)', (v) => {return v.split(',')}, [512, 512])
@@ -76,9 +76,9 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
           console.log('wrote svg[', index, ']         : ', `${texture.filename}.svg`);
         });
       } 
-      fs.writeFile(texture.filename, texture.texture, (err) => {
+      fs.writeFile(`${texture.filename}.png`, texture.texture, (err) => {
         if (err) throw err;
-        console.log('wrote spritesheet[', index, '] : ', texture.filename);
+        console.log('wrote spritesheet[', index, '] : ', `${texture.filename}.png`);
       });
     });
     fs.writeFile(font.filename, font.data, (err) => {
@@ -86,9 +86,9 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
       console.log('wrote font file        : ', font.filename);
     });
     if(opt.reuse !== false) {
-      fs.writeFile(`${font.filename}.cfg`, JSON.stringify(font.settings, null, '\t'), (err) => {
+      fs.writeFile(`${textures[0].filename}.cfg`, JSON.stringify(font.settings, null, '\t'), (err) => {
         if (err) throw err;
-        console.log('wrote cfg file         : ', `${font.filename}.cfg`);
+        console.log('wrote cfg file         : ', `${textures[0].filename}.cfg`);
       });
     }
   });

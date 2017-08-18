@@ -99,13 +99,13 @@ function generateBMFont (fontPath, opt, callback) {
   let pages = [];
   if (opt.reuse.packer !== undefined) {
     pages = opt.reuse.pages;
-    packer.restore(opt.reuse.packer.bins);
+    packer.load(opt.reuse.packer.bins);
   }
 
   let bar;
   bar = new ProgressBar.Bar({
     format: "Genrating {percentage}%|{bar}| ({value}/{total}) {duration}s",
-    // clearOnComplete: true
+    clearOnComplete: true
   }, ProgressBar.Presets.shades_classic); 
   bar.start(charset.length, 0);
 
@@ -130,10 +130,14 @@ function generateBMFont (fontPath, opt, callback) {
 
     const os2 = font.tables.os2;
     const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
+    const fontface = path.basename(fontPath, path.extname(fontPath));
+    let fontDir = path.dirname(fontPath);
     if(!filename) {
-      const name = font.tables.name.fullName;
-      filename = name[Object.getOwnPropertyNames(name)[0]];
+      filename = path.join(fontDir, fontface); 
       console.log(`Use font-face as filename : ${filename}`);
+    } else {
+      if (path.dirname(filename).length > 0) fontDir = path.dirname(filename);
+      filename = path.basename(filename, path.extname(filename));
     }
 
     packer.addArray(results);
@@ -141,8 +145,8 @@ function generateBMFont (fontPath, opt, callback) {
       let svg = "";
       let texname = "";
       if (index > pages.length - 1) { 
-        texname = `${filename}.${index}.png`;
-        pages.push(texname);
+        texname = `${filename}.${index}`;
+        pages.push(`${texname}.png`);
         if(fieldType === "msdf") {
           context.fillStyle = '#000000';
           context.fillRect(0, 0, canvas.width, canvas.height);
@@ -150,9 +154,9 @@ function generateBMFont (fontPath, opt, callback) {
           context.clearRect(0, 0, canvas.width, canvas.height);
         }
       } else {
-        texname = pages[index];
+        texname = path.basename(pages[index], path.extname(pages[index]));
         let img = new Canvas.Image;
-        img.src = fs.readFileSync(texname);
+        img.src = fs.readFileSync(path.join(fontDir, `${texname}.png`));
         context.drawImage(img, 0, 0);
       }
       bin.rects.forEach(rect => {
@@ -171,7 +175,7 @@ function generateBMFont (fontPath, opt, callback) {
         chars.push(rect.data.fontData);
       });
       let tex = {
-        filename: texname,
+        filename: path.join(fontDir, texname),
         texture: canvas.toBuffer()
       }
       if (debug) tex.svg = svg;
@@ -195,7 +199,7 @@ function generateBMFont (fontPath, opt, callback) {
       pages,
       chars,
       info: {
-        face: path.basename(filename),
+        face: fontface,
         type: fieldType,
         size: fontSize,
         bold: 0,
@@ -224,22 +228,14 @@ function generateBMFont (fontPath, opt, callback) {
     };
     if(roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal);
     let fontFile = {};
-    fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
+    const ext = outputType === "json" ? `.json` : `.fnt`;
+    fontFile.filename = path.join(fontDir, fontface + ext);
     fontFile.data = utils.stringify(fontData, outputType);
 
     // Store pages name and available packer freeRects in settings
     settings.pages = pages;
     settings.packer = {};
-    settings.packer.bins = [];
-    packer.bins.forEach(bin => {
-      let binSettings = {};
-      binSettings.width = bin.width;
-      binSettings.height = bin.height;
-      binSettings.maxWidth = bin.maxWidth;
-      binSettings.maxHeight = bin.maxHeight;
-      binSettings.freeRects = bin.freeRects;
-      settings.packer.bins.push(binSettings);
-    });
+    settings.packer.bins = packer.save(); 
     fontFile.settings = settings;
 
     console.log("\nGeneration complete!\n");
