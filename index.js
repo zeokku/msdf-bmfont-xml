@@ -94,7 +94,13 @@ function generateBMFont (fontPath, opt, callback) {
 
   // Initialize settings
   let settings = {};
-  settings.opt = opt;
+  settings.opt = JSON.parse(JSON.stringify(opt));
+  delete settings.opt['reuse']; // prune previous settings
+  let pages = [];
+  if (opt.reuse.packer !== undefined) {
+    pages = opt.reuse.pages;
+    packer.restore(opt.reuse.packer.bins);
+  }
 
   let bar;
   bar = new ProgressBar.Bar({
@@ -129,17 +135,25 @@ function generateBMFont (fontPath, opt, callback) {
       filename = name[Object.getOwnPropertyNames(name)[0]];
       console.log(`Use font-face as filename : ${filename}`);
     }
-    let pages = [];
 
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
       let svg = "";
-      pages.push(`${filename}.${index}.png`);
-      if(fieldType === "msdf") {
-        context.fillStyle = '#000000';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+      let texname = "";
+      if (index > pages.length - 1) { 
+        texname = `${filename}.${index}.png`;
+        pages.push(texname);
+        if(fieldType === "msdf") {
+          context.fillStyle = '#000000';
+          context.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+        }
       } else {
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        texname = pages[index];
+        let img = new Canvas.Image;
+        img.src = fs.readFileSync(texname);
+        context.drawImage(img, 0, 0);
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
@@ -157,7 +171,7 @@ function generateBMFont (fontPath, opt, callback) {
         chars.push(rect.data.fontData);
       });
       let tex = {
-        filename: `${filename}.${index}.png`,
+        filename: texname,
         texture: canvas.toBuffer()
       }
       if (debug) tex.svg = svg;
@@ -181,7 +195,7 @@ function generateBMFont (fontPath, opt, callback) {
       pages,
       chars,
       info: {
-        face: filename,
+        face: path.basename(filename),
         type: fieldType,
         size: fontSize,
         bold: 0,
@@ -215,6 +229,7 @@ function generateBMFont (fontPath, opt, callback) {
 
     // Store pages name and available packer freeRects in settings
     settings.pages = pages;
+    settings.packer = {};
     settings.packer.bins = [];
     packer.bins.forEach(bin => {
       let binSettings = {};

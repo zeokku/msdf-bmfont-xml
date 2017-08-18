@@ -10,6 +10,7 @@ const utils = require('./lib/utils');
 
 args
   .version('msdf-bmfont-xml v' + pjson.version)
+  .usage('msdf-bmfont [options] <font-file>')
   .arguments('<font_file>')
   .description('Creates a BMFont compatible bitmap font of signed distance fields from a font file')
   .option('-f, --output-type <format>', 'font file format: xml(default) | json', 'xml')
@@ -22,7 +23,7 @@ args
   .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', 'msdf')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
-  .option('-u, --reuse [file.cfg]', 're-use font atlas and append new font', false)
+  .option('-u, --reuse [file.cfg]', 'use old config to append font, ommit file to save new cfg', false)
   .action(function(file){
     fontFile = file;
   }).parse(process.argv);
@@ -84,8 +85,8 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
       if (err) throw err;
       console.log('wrote font file        : ', font.filename);
     });
-    if(opt.reuse === true) {
-      fs.writeFile(`${font.filename}.cfg`, font.settings, (err) => {
+    if(opt.reuse !== false) {
+      fs.writeFile(`${font.filename}.cfg`, JSON.stringify(font.settings, null, '\t'), (err) => {
         if (err) throw err;
         console.log('wrote cfg file         : ', `${font.filename}.cfg`);
       });
