@@ -85,7 +85,7 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
       console.log('wrote font file        : ', font.filename);
     });
     if(opt.reuse === true) {
-      fs.writeFile(`${font.filename}.cfg`, font.reuse, (err) => {
+      fs.writeFile(`${font.filename}.cfg`, font.settings, (err) => {
         if (err) throw err;
         console.log('wrote cfg file         : ', `${font.filename}.cfg`);
       });

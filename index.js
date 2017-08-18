@@ -59,19 +59,18 @@ function generateBMFont (fontPath, opt, callback) {
   callback = callback || function () {};
   opt = opt || {};
   const reuse = typeof opt.reuse === 'boolean' ? {} : opt.reuse.opt;
-  let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
-  const outputType = opt.outputType || reuse.outputType || "xml";
-  let filename = opt.filename || reuse.filename;
-  const fontSize = opt.fontSize || reuse.fontSize || 42;
-  const fontSpacing = opt.fontSpacing || reuse.fontSpacing || [0, 0];
-  const fontPadding = opt.fontPadding || reuse.fontPadding || [0, 0, 0, 0];
-  const textureWidth = opt.textureSize[0] || reuse.textureSize[0] || 512;
-  const textureHeight = opt.textureSize[1] || reuse.textureSize[1] || 512;
-  const texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : reuse.texturePadding || 1;
-  const distanceRange = opt.distanceRange || reuse.distanceRang || 4;
-  const fieldType = opt.fieldType || reuse.fieldType || 'msdf';
-  const roundDecimal = opt.roundDecimal || reuse.roundDecimal; // if no roudDecimal option, left null as-is
-  const progress = opt.progress || true;
+  let charset = opt.charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
+  const outputType = opt.outputType = opt.outputType || reuse.outputType || "xml";
+  let filename = opt.filename = opt.filename || reuse.filename;
+  const fontSize = opt.fontSize = opt.fontSize || reuse.fontSize || 42;
+  const fontSpacing = opt.fontSpacing = opt.fontSpacing || reuse.fontSpacing || [0, 0];
+  const fontPadding = opt.fontPadding = opt.fontPadding || reuse.fontPadding || [0, 0, 0, 0];
+  const textureWidth = opt.textureWidth = opt.textureSize[0] || reuse.textureSize[0] || 512;
+  const textureHeight = opt.textureHeight = opt.textureSize[1] || reuse.textureSize[1] || 512;
+  const texturePadding = opt.texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : reuse.texturePadding || 1;
+  const distanceRange = opt.distanceRang = opt.distanceRange || reuse.distanceRang || 4;
+  const fieldType = opt.fieldType = opt.fieldType || reuse.fieldType || 'msdf';
+  const roundDecimal = opt.roundDecimal = opt.roundDecimal || reuse.roundDecimal; // if no roudDecimal option, left null as-is
   const debug = opt.vector || false;
   const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
 
@@ -93,14 +92,16 @@ function generateBMFont (fontPath, opt, callback) {
     return i == self.indexOf(e);
   }); // Remove duplicate
 
+  // Initialize settings
+  let settings = {};
+  settings.opt = opt;
+
   let bar;
-  if (progress){
-    bar = new ProgressBar.Bar({
-      format: "Genrating {percentage}%|{bar}| ({value}/{total}) {duration}s",
-      // clearOnComplete: true
-    }, ProgressBar.Presets.shades_classic); 
-    bar.start(charset.length, 0);
-  } // Initializing progress bar
+  bar = new ProgressBar.Bar({
+    format: "Genrating {percentage}%|{bar}| ({value}/{total}) {duration}s",
+    // clearOnComplete: true
+  }, ProgressBar.Presets.shades_classic); 
+  bar.start(charset.length, 0);
 
   mapLimit(charset, 15, (char, cb) => {
     generateImage({
@@ -114,12 +115,12 @@ function generateBMFont (fontPath, opt, callback) {
       debug
     }, (err, res) => {
       if (err) return cb(err);
-      if (progress) bar.increment();
+      bar.increment();
       cb(null, res);
     });
   }, (err, results) => {
     if (err) callback(err);
-    if (progress) bar.stop();
+    bar.stop();
 
     const os2 = font.tables.os2;
     const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
@@ -211,7 +212,22 @@ function generateBMFont (fontPath, opt, callback) {
     let fontFile = {};
     fontFile.filename = outputType === "json" ? `${filename}.json` : `${filename}.fnt`;
     fontFile.data = utils.stringify(fontData, outputType);
-    if (progress) console.log("\nGeneration complete!\n");
+
+    // Store pages name and available packer freeRects in settings
+    settings.pages = pages;
+    settings.packer.bins = [];
+    packer.bins.forEach(bin => {
+      let binSettings = {};
+      binSettings.width = bin.width;
+      binSettings.height = bin.height;
+      binSettings.maxWidth = bin.maxWidth;
+      binSettings.maxHeight = bin.maxHeight;
+      binSettings.freeRects = bin.freeRects;
+      settings.packer.bins.push(binSettings);
+    });
+    fontFile.settings = settings;
+
+    console.log("\nGeneration complete!\n");
     callback(null, textures, fontFile);
   });
 }
