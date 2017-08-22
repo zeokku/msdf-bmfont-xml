@@ -54,6 +54,7 @@ msdf-bmfont --reuse -o path/to/atlas.png -m 512,256 -s 42 -r 3 -p 1 -t msdf path
 ```
 
 We will get three file: `atlas.0.png` `atlas.0.cfg` & `font.fnt` and this is the generated atlas in the minimum pot size (256x256):
+
 ![Atlas0](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.0.png)
 
 Then we want to use the old setting except a different font and use monochrome signed distance field atlas, and output an extra `.svg` version of atlas:
@@ -63,12 +64,15 @@ msdf-bmfont -v -u path/to/atlas.0.cfg -t sdf -p 0 -r 8 path/to/anotherfont.ttf
 ```
 
 This time we get a modified `atlas.0.png` with new bitmap font appended:
+
 ![Atlas1](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.1.jpg)
 
 Not satisfied with the style? Remember we got a `svg` atlas!
+
 ![svg](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/svg.png)
 
 How about fire up some graphic editor and add some neat effect and lay on the output atlas?
+
 ![final](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.2.jpg)
 
 ## Install as Module
