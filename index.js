@@ -45,6 +45,7 @@ function generateBMFont (fontPath, opt, callback) {
   if (!fontPath || typeof fontPath !== 'string') {
     throw new TypeError('must specify a font path');
   }
+  let fontDir = path.dirname(fontPath); // Set fallback output path to font path
   if (typeof opt === 'function') {
     callback = opt;
     opt = {};
@@ -55,22 +56,39 @@ function generateBMFont (fontPath, opt, callback) {
   if (!callback) {
     throw new TypeError('missing callback');
   }
+  if (typeof opt.reuse !== 'boolean') {
+    if (path.dirname(opt.reuse).length > 0) {
+      fontDir = path.dirname(opt.reuse);
+    }
+    if (!fs.existsSync(opt.reuse)) {
+      console.error('Re-use cfg file not found, aborting....');
+      process.exit(1);
+    }
+    opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
+  }
+  if (opt.textureSize && opt.textureSize.length !== 2) {
+    console.error('textureSize format shall be: width,height');
+    process.exit(1);
+  }
 
   callback = callback || function () {};
   opt = opt || {};
   const reuse = typeof opt.reuse === 'boolean' ? {} : opt.reuse.opt;
   let charset = opt.charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
-  const outputType = opt.outputType = opt.outputType || reuse.outputType || "xml";
-  let filename = opt.filename = opt.filename || reuse.filename;
-  const fontSize = opt.fontSize = opt.fontSize || reuse.fontSize || 42;
-  const fontSpacing = opt.fontSpacing = opt.fontSpacing || reuse.fontSpacing || [0, 0];
-  const fontPadding = opt.fontPadding = opt.fontPadding || reuse.fontPadding || [0, 0, 0, 0];
-  const textureWidth = opt.textureWidth = opt.textureSize[0] || reuse.textureSize[0] || 512;
-  const textureHeight = opt.textureHeight = opt.textureSize[1] || reuse.textureSize[1] || 512;
-  const texturePadding = opt.texturePadding = Number.isFinite(opt.texturePadding) ? opt.texturePadding : reuse.texturePadding || 1;
-  const distanceRange = opt.distanceRang = opt.distanceRange || reuse.distanceRang || 4;
-  const fieldType = opt.fieldType = opt.fieldType || reuse.fieldType || 'msdf';
-  const roundDecimal = opt.roundDecimal = opt.roundDecimal || reuse.roundDecimal; // if no roudDecimal option, left null as-is
+  const outputType = opt.outputType = utils.valueQueue([opt.outputType, reuse.outputType, "xml"]);
+  let filename = utils.valueQueue([opt.filename, reuse.filename]);
+  const fontSize = opt.fontSize = utils.valueQueue([opt.fontSize, reuse.fontSize, 42]);
+  const fontSpacing = opt.fontSpacing = utils.valueQueue([opt.fontSpacing, reuse.fontSpacing, [0, 0]]);
+  const fontPadding = opt.fontPadding = utils.valueQueue([opt.fontPadding, reuse.fontPadding, [0, 0, 0, 0]]);
+  const textureWidth = opt.textureWidth = utils.valueQueue([opt.textureSize || reuse.textureSize, [512, 512]])[0];
+  const textureHeight = opt.textureHeight = utils.valueQueue([opt.textureSize || reuse.textureSize, [512, 512]])[1];
+  const texturePadding = opt.texturePadding = utils.valueQueue([opt.texturePadding, reuse.texturePadding, 1]);
+  const distanceRange = opt.distanceRange = utils.valueQueue([opt.distanceRange, reuse.distanceRange, 4]);
+  const fieldType = opt.fieldType = utils.valueQueue([opt.fieldType, reuse.fieldType, 'msdf']);
+  const roundDecimal = opt.roundDecimal = utils.valueQueue([opt.roundDecimal, reuse.roundDecimal]); // if no roudDecimal option, left null as-is
+  const smartSize = opt.smartSize = utils.valueQueue([opt.smartSize, reuse.smartSize, true]);
+  const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, true]);
+  const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
   const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
 
@@ -83,14 +101,27 @@ function generateBMFont (fontPath, opt, callback) {
   if (font.outlinesFormat !== 'truetype') {
     throw new TypeError('must specify a truetype font');
   }
-  const canvas = new Canvas(textureWidth, textureHeight);
-  const context = canvas.getContext('2d');
-  const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding);
+  const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding, {
+    smart: smartSize,
+    pot: pot,
+    square: square 
+  });
   const chars = [];
   
   charset = charset.filter((e, i, self) => {
     return i == self.indexOf(e);
   }); // Remove duplicate
+
+  const os2 = font.tables.os2;
+  const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
+  const fontface = path.basename(fontPath, path.extname(fontPath));
+  if(!filename) {
+    filename = path.join(fontDir, fontface); 
+    console.log(`Use font-face as filename : ${filename}`);
+  } else {
+    if (opt.filename) fontDir = path.dirname(opt.filename);
+    filename = opt.filename = path.basename(filename, path.extname(filename));
+  }
 
   // Initialize settings
   let settings = {};
@@ -128,31 +159,21 @@ function generateBMFont (fontPath, opt, callback) {
     if (err) callback(err);
     bar.stop();
 
-    const os2 = font.tables.os2;
-    const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
-    const fontface = path.basename(fontPath, path.extname(fontPath));
-    let fontDir = path.dirname(fontPath);
-    if(!filename) {
-      filename = path.join(fontDir, fontface); 
-      console.log(`Use font-face as filename : ${filename}`);
-    } else {
-      if (path.dirname(filename).length > 0) fontDir = path.dirname(filename);
-      filename = path.basename(filename, path.extname(filename));
-    }
-
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
       let svg = "";
       let texname = "";
+      const canvas = new Canvas(bin.width, bin.height);
+      const context = canvas.getContext('2d');
+      if(fieldType === "msdf") {
+        context.fillStyle = '#000000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
       if (index > pages.length - 1) { 
         texname = `${filename}.${index}`;
         pages.push(`${texname}.png`);
-        if(fieldType === "msdf") {
-          context.fillStyle = '#000000';
-          context.fillRect(0, 0, canvas.width, canvas.height);
-        } else {
-          context.clearRect(0, 0, canvas.width, canvas.height);
-        }
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));
         let img = new Canvas.Image;

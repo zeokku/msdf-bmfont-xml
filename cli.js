@@ -17,13 +17,16 @@ args
   .option('-o, --filename <atlas_path>', 'filename of font textures (defaut: font-face) font filename always set to font-face name')
   .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)', 42)
   .option('-i, --charset-file <charset>', 'user-specified charactors from text-file')
-  .option('-m, --texture-size <w,h>', 'Width/Height of generated textures (default: 512,512)', (v) => {return v.split(',')}, [512, 512])
+  .option('-m, --texture-size <w,h>', 'Width/Height of generated textures (default: 512,512)', (v) => {return v.split(',')})
   .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)', 1)
   .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)', 4)
   .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', 'msdf')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
   .option('-u, --reuse [file.cfg]', 'use old config to append font, ommit file to save new cfg', false)
+  .option('--smart-size', 'shrink atlas to the smallest possible square')
+  .option('--pot', 'atlas size shall be power of 2')
+  .option('--square', 'atlas size shall be square')
   .action(function(file){
     fontFile = file;
   }).parse(process.argv);
@@ -48,13 +51,7 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
     console.warn('No valid charset file loaded, fallback to ASC-II');
   }
   if (data) opt.charset = data;
-  if (typeof opt.reuse !== 'boolean') {
-    if (!fs.existsSync(opt.reuse)) {
-      console.error('Re-use cfg file not found, aborting....');
-      process.exit(1);
-    }
-    opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
-  }
+  
   generateBMFont(fontFile, opt, (error, textures, font) => {
     if (error) throw error;
     textures.forEach((texture, index) => {
