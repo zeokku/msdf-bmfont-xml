@@ -6,5 +6,6 @@ test/output/*.fnt
 test/output/*.png
 test/output/*.txt
 test/output/*.svg
+test/output/*.cfg
 .vscode/
 .eslintrc*
