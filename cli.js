@@ -10,23 +10,23 @@ const utils = require('./lib/utils');
 
 args
   .version('msdf-bmfont-xml v' + pjson.version)
-  .usage('msdf-bmfont [options] <font-file>')
+  .usage('[options] <font-file>')
   .arguments('<font_file>')
   .description('Creates a BMFont compatible bitmap font of signed distance fields from a font file')
   .option('-f, --output-type <format>', 'font file format: xml(default) | json', 'xml')
   .option('-o, --filename <atlas_path>', 'filename of font textures (defaut: font-face) font filename always set to font-face name')
-  .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)', 42)
+  .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)')
   .option('-i, --charset-file <charset>', 'user-specified charactors from text-file')
   .option('-m, --texture-size <w,h>', 'Width/Height of generated textures (default: 512,512)', (v) => {return v.split(',')})
-  .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)', 1)
-  .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)', 4)
-  .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', 'msdf')
+  .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)')
+  .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)')
+  .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
   .option('-u, --reuse [file.cfg]', 'use old config to append font, ommit file to save new cfg', false)
-  .option('--smart-size', 'shrink atlas to the smallest possible square')
-  .option('--pot', 'atlas size shall be power of 2')
-  .option('--square', 'atlas size shall be square')
+  .option('    --smart-size', 'shrink atlas to the smallest possible square')
+  .option('    --pot', 'atlas size shall be power of 2')
+  .option('    --square', 'atlas size shall be square')
   .action(function(file){
     fontFile = file;
   }).parse(process.argv);
