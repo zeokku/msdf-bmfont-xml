@@ -15,7 +15,9 @@ This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to genera
 $ npm install msdf-bmfont-xml -g
 ```
 Then you just need to call `msdf-bmfont` from console to generate font file.
-Type in `msdf-bmfont --help` for more detail usage,
+Type in `msdf-bmfont --help` for more detail usage.
+
+![Console-Demo](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/console-demo.gif)
 
 ### Usage
 
@@ -74,6 +76,8 @@ Not satisfied with the style? Remember we got a `svg` atlas!
 How about fire up some graphic editor and add some neat effect and lay on the output atlas?
 
 ![final](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.2.jpg)
+
+
 
 ## Install as Module
 
