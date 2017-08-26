@@ -90,6 +90,7 @@ function generateBMFont (fontPath, opt, callback) {
   const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, true]);
   const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
+  const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
   const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
 
   // TODO: Validate options
@@ -149,7 +150,8 @@ function generateBMFont (fontPath, opt, callback) {
       fieldType,
       distanceRange,
       roundDecimal,
-      debug
+      debug,
+      tolerance
     }, (err, res) => {
       if (err) return cb(err);
       bar.increment();
@@ -265,7 +267,7 @@ function generateBMFont (fontPath, opt, callback) {
 }
 
 function generateImage (opt, callback) {
-  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug} = opt;
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug, tolerance} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -282,13 +284,15 @@ function generateImage (opt, callback) {
   });
   contours.push(currentContour);
 
-  utils.setTolerance(0.2, 1);
-  let numFiltered = utils.filterContours(contours);
-  if (numFiltered && debug)
-    console.log(`${char} removed ${numFiltered} small contour(s)`);
-  // let numReversed = utils.alignClockwise(contours, false);
-  // if (numReversed && debug)
-  //   console.log(`${char} found ${numReversed}/${contours.length} reversed contour(s)`);
+  if (tolerance != 0) {
+    utils.setTolerance(tolerance, tolerance * 10);
+    let numFiltered = utils.filterContours(contours);
+    if (numFiltered && debug)
+      console.log(`\n${char} removed ${numFiltered} small contour(s)`);
+    // let numReversed = utils.alignClockwise(contours, false);
+    // if (numReversed && debug)
+    //   console.log(`${char} found ${numReversed}/${contours.length} reversed contour(s)`);
+  }
   let shapeDesc = utils.stringifyContours(contours);
 
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
