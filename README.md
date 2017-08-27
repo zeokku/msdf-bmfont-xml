@@ -8,14 +8,76 @@ Converts a `.ttf` font file into multichannel signed distance fields, then outpu
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
 This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
 
-![Preview image](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/msdf-bmfont-xml.png)
+![Preview image](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/msdf-bmfont-xml.png)
 
 ## Install as CLI
 ```bash
 $ npm install msdf-bmfont-xml -g
 ```
 Then you just need to call `msdf-bmfont` from console to generate font file.
-Type in `msdf-bmfont --help` for more detail usage,
+Type in `msdf-bmfont --help` for more detail usage.
+
+![Console-Demo](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/console-demo.gif)
+
+### Usage
+
+```
+Usage: msdf-bmfont msdf-bmfont [options] <font-file>
+
+  Creates a BMFont compatible bitmap font of signed distance fields from a font file
+
+  Options:
+
+    -V, --version                 output the version number
+    -f, --output-type <format>    font file format: xml(default) | json
+    -o, --filename <atlas_path>   filename of font textures (defaut: font-face) 
+                                  font filename always set to font-face name
+    -s, --font-size <fontSize>    font size for generated textures (default: 42)
+    -i, --charset-file <charset>  user-specified charactors from text-file
+    -m, --texture-size <w,h>      Width/Height of generated textures (default: 512,512)
+    -p, --texture-padding <n>     padding between glyphs (default: 1)
+    -r, --distance-range <n>      distance range for SDF (default: 4)
+    -t, --field-type <type>       msdf(default) | sdf | psdf | svg
+    -d, --round-decimal <digit>   rounded digits of the output font file. (Defaut: 0)
+    -v, --vector                  generate svg vector file for debuging
+    -u, --reuse [file.cfg]        use old config to append font, ommit file to save new cfg
+        --smart-size              shrink atlas to the smallest possible square
+        --pot                     atlas size shall be power of 2
+        --square                  atlas size shall be square
+    -h, --help                    output usage information
+```
+
+### Examples
+
+Generate a multi-channel signed distance field font atlas with ASCII charset, font size 42, spread 3, maximum texture size 512x256, padding 1, and save out config file:
+
+```bash
+msdf-bmfont --reuse -o path/to/atlas.png -m 512,256 -s 42 -r 3 -p 1 -t msdf path/to/font.ttf
+```
+
+We will get three file: `atlas.0.png` `atlas.0.cfg` & `font.fnt` and this is the generated atlas in the minimum pot size (256x256):
+
+![Atlas0](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.0.png)
+
+Then we want to use the old setting except a different font and use monochrome signed distance field atlas, and output an extra `.svg` version of atlas:
+
+```bash
+msdf-bmfont -v -u path/to/atlas.0.cfg -t sdf -p 0 -r 8 path/to/anotherfont.ttf
+```
+
+This time we get a modified `atlas.0.png` with new bitmap font appended:
+
+![Atlas1](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.1.jpg)
+
+Not satisfied with the style? Remember we got a `svg` atlas!
+
+![svg](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/svg.png)
+
+How about fire up some graphic editor and add some neat effect and lay on the output atlas?
+
+![final](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.2.jpg)
+
+
 
 ## Install as Module
 

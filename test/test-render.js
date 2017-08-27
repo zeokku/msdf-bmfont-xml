@@ -5,6 +5,8 @@ const createMSDFShader = require("./createMSDFShader");
 const fontPreloader = require("./fontPreloader");
 
 let scene, camera, renderer, mesh;
+const defaultText = "The quick brown fox jumped over the lazy dogs.";
+const text = process.argv[2] || defaultText;
 
 function init() {
   const canvas = document.createElement("canvas");
@@ -69,7 +71,7 @@ fontPreloader((err, data) => {
     font: data.font,
     width: 300
   });
-  geometry.update("The quick brown fox jumped over the lazy dogs.");
+  geometry.update(text);
   mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = Math.PI;
   mesh.position.x = -140;
