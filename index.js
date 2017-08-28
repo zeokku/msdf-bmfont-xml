@@ -240,8 +240,8 @@ function generateBMFont (fontPath, opt, callback) {
       common: {
         lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
         base: baseline,
-        scaleW: textureWidth,
-        scaleH: textureHeight,
+        scaleW: packer.bins[0].width,
+        scaleH: packer.bins[0].height,
         pages: packer.bins.length,
         packed: 0,
         alphaChnl: 0,
