@@ -21,7 +21,7 @@ module.exports = generateBMFont;
 /**
  * Creates a BMFont compatible bitmap font of signed distance fields from a font file
  *
- * @param {string} fontPath - Path to the input ttf font (otf and ttc not supported yet) 
+ * @param {string} fontPath - Path to the input ttf/otf/woff font 
  * @param {Object} opt - Options object for generating bitmap font (Optional) :
  *            outputType : font file format Avaliable: xml(default), json
  *            filename : filename of both font file and font textures
@@ -102,8 +102,8 @@ function generateBMFont (fontPath, opt, callback) {
   }
 
   const font = opentype.loadSync(fontPath);
-  if (font.outlinesFormat !== 'truetype') {
-    throw new TypeError('must specify a truetype font');
+  if (font.outlinesFormat !== 'truetype' && font.outlinesFormat !== 'cff') {
+    throw new TypeError('must specify a truetype font (ttf, otf, woff)');
   }
   const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding, {
     smart: smartSize,
