@@ -32,6 +32,9 @@ module.exports = generateBMFont;
  *            distanceRange : distance range for computing signed distance field
  *            fieldType : "msdf"(default), "sdf", "psdf"
  *            roundDecimal  : rounded digits of the output font file. (Defaut is null)
+ *            smartSize : shrink atlas to the smallest possible square (Default: false)
+ *            pot : atlas size shall be power of 2 (Default: false)
+ *            square : atlas size shall be square (Default: false)
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
  *
  */
@@ -86,8 +89,8 @@ function generateBMFont (fontPath, opt, callback) {
   const distanceRange = opt.distanceRange = utils.valueQueue([opt.distanceRange, reuse.distanceRange, 4]);
   const fieldType = opt.fieldType = utils.valueQueue([opt.fieldType, reuse.fieldType, 'msdf']);
   const roundDecimal = opt.roundDecimal = utils.valueQueue([opt.roundDecimal, reuse.roundDecimal]); // if no roudDecimal option, left null as-is
-  const smartSize = opt.smartSize = utils.valueQueue([opt.smartSize, reuse.smartSize, true]);
-  const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, true]);
+  const smartSize = opt.smartSize = utils.valueQueue([opt.smartSize, reuse.smartSize, false]);
+  const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, false]);
   const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);

@@ -24,10 +24,10 @@ args
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
   .option('-u, --reuse [file.cfg]', 'use old config to append font, ommit file to save new cfg', false)
-  .option('    --tolerance <value>', 'use point tolerance to filter problematic vector shape', 0)
-  .option('    --smart-size', 'shrink atlas to the smallest possible square')
-  .option('    --pot', 'atlas size shall be power of 2')
-  .option('    --square', 'atlas size shall be square')
+  .option('    --tolerance <value>', 'use point tolerance to filter problematic vector shape (Defaut: 0)', 0)
+  .option('    --smart-size', 'shrink atlas to the smallest possible square (Default: false)', false)
+  .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
+  .option('    --square', 'atlas size shall be square (Default: false)', false)
   .action(function(file){
     fontFile = file;
   }).parse(process.argv);
