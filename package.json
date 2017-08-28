@@ -4,8 +4,8 @@
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
-    "test": "cd test/output && node ../../cli.js -u -o font -m 512,256 -t msdf -s 42 -r 4 ../../assets/fonts/DIN_CB.ttf",
-    "render": "npm test && devtool test/test-render.js -s -- 'test text'"
+    "test": "cd test/output && node ../../cli.js -u -o font -m 512,256 -t msdf -s 42 -r 4 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
+    "render": "npm test && devtool test/test-render.js -s -- 'output/DIN_CB.fnt'"
   },
   "bin": {
     "msdf-bmfont": "./cli.js"
@@ -53,6 +53,7 @@
     "load-bmfont": "^1.2.3",
     "run-parallel": "^1.1.6",
     "three": "^0.86.0",
-    "three-bmfont-text": "^2.2.1"
+    "three-bmfont-text": "^2.2.1",
+    "xml2js": "^0.4.19"
   }
 }

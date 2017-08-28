@@ -21,7 +21,7 @@ module.exports = generateBMFont;
 /**
  * Creates a BMFont compatible bitmap font of signed distance fields from a font file
  *
- * @param {string} fontPath - Path to the input ttf font (otf and ttc not supported yet) 
+ * @param {string} fontPath - Path to the input ttf/otf/woff font 
  * @param {Object} opt - Options object for generating bitmap font (Optional) :
  *            outputType : font file format Avaliable: xml(default), json
  *            filename : filename of both font file and font textures
@@ -32,6 +32,9 @@ module.exports = generateBMFont;
  *            distanceRange : distance range for computing signed distance field
  *            fieldType : "msdf"(default), "sdf", "psdf"
  *            roundDecimal  : rounded digits of the output font file. (Defaut is null)
+ *            smartSize : shrink atlas to the smallest possible square (Default: false)
+ *            pot : atlas size shall be power of 2 (Default: false)
+ *            square : atlas size shall be square (Default: false)
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
  *
  */
@@ -86,8 +89,8 @@ function generateBMFont (fontPath, opt, callback) {
   const distanceRange = opt.distanceRange = utils.valueQueue([opt.distanceRange, reuse.distanceRange, 4]);
   const fieldType = opt.fieldType = utils.valueQueue([opt.fieldType, reuse.fieldType, 'msdf']);
   const roundDecimal = opt.roundDecimal = utils.valueQueue([opt.roundDecimal, reuse.roundDecimal]); // if no roudDecimal option, left null as-is
-  const smartSize = opt.smartSize = utils.valueQueue([opt.smartSize, reuse.smartSize, true]);
-  const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, true]);
+  const smartSize = opt.smartSize = utils.valueQueue([opt.smartSize, reuse.smartSize, false]);
+  const pot = opt.pot = utils.valueQueue([opt.pot, reuse.pot, false]);
   const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
@@ -99,8 +102,8 @@ function generateBMFont (fontPath, opt, callback) {
   }
 
   const font = opentype.loadSync(fontPath);
-  if (font.outlinesFormat !== 'truetype') {
-    throw new TypeError('must specify a truetype font');
+  if (font.outlinesFormat !== 'truetype' && font.outlinesFormat !== 'cff') {
+    throw new TypeError('must specify a truetype font (ttf, otf, woff)');
   }
   const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding, {
     smart: smartSize,
@@ -223,7 +226,6 @@ function generateBMFont (fontPath, opt, callback) {
       chars,
       info: {
         face: fontface,
-        type: fieldType,
         size: fontSize,
         bold: 0,
         italic: 0,
@@ -238,14 +240,18 @@ function generateBMFont (fontPath, opt, callback) {
       common: {
         lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
         base: baseline,
-        scaleW: textureWidth,
-        scaleH: textureHeight,
+        scaleW: packer.bins[0].width,
+        scaleH: packer.bins[0].height,
         pages: packer.bins.length,
         packed: 0,
         alphaChnl: 0,
         redChnl: 0,
         greenChnl: 0,
         blueChnl: 0
+      },
+      distanceField: {
+        fieldType: fieldType,
+        distanceRange: distanceRange
       },
       kernings: kernings
     };

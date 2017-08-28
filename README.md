@@ -22,7 +22,7 @@ Type in `msdf-bmfont --help` for more detail usage.
 ### Usage
 
 ```
-Usage: msdf-bmfont msdf-bmfont [options] <font-file>
+Usage: msdf-bmfont [options] <font-file>
 
   Creates a BMFont compatible bitmap font of signed distance fields from a font file
 
@@ -41,9 +41,10 @@ Usage: msdf-bmfont msdf-bmfont [options] <font-file>
     -d, --round-decimal <digit>   rounded digits of the output font file. (Defaut: 0)
     -v, --vector                  generate svg vector file for debuging
     -u, --reuse [file.cfg]        use old config to append font, ommit file to save new cfg
-        --smart-size              shrink atlas to the smallest possible square
-        --pot                     atlas size shall be power of 2
-        --square                  atlas size shall be square
+        --tolerance <value>       use point tolerance to filter problematic vector shape (Defaut: 0)
+        --smart-size              shrink atlas to the smallest possible square (Default: false)
+        --pot                     atlas size shall be power of 2 (Default: false)
+        --square                  atlas size shall be square (Default: false)
     -h, --help                    output usage information
 ```
 
