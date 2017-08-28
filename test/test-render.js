@@ -6,7 +6,8 @@ const fontPreloader = require("./fontPreloader");
 
 let scene, camera, renderer, mesh;
 const defaultText = "The quick brown fox jumped over the lazy dogs.";
-const text = process.argv[2] || defaultText;
+const text = process.argv[3] || defaultText;
+const fontFile = process.argv[2]
 
 function init() {
   const canvas = document.createElement("canvas");
@@ -77,4 +78,4 @@ fontPreloader((err, data) => {
   mesh.position.x = -140;
   mesh.position.y = -100;
   scene.add(mesh);
-});
+}, fontFile);
