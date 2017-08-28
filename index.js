@@ -226,7 +226,6 @@ function generateBMFont (fontPath, opt, callback) {
       chars,
       info: {
         face: fontface,
-        type: fieldType,
         size: fontSize,
         bold: 0,
         italic: 0,
@@ -249,6 +248,10 @@ function generateBMFont (fontPath, opt, callback) {
         redChnl: 0,
         greenChnl: 0,
         blueChnl: 0
+      },
+      distanceField: {
+        fieldType: fieldType,
+        distanceRange: distanceRange
       },
       kernings: kernings
     };
