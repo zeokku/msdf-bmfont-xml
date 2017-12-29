@@ -120,7 +120,7 @@ function generateBMFont (fontPath, opt, callback) {
   const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
   const fontface = path.basename(fontPath, path.extname(fontPath));
   if(!filename) {
-    filename = path.join(fontDir, fontface); 
+    filename = fontface;
     console.log(`Use font-face as filename : ${filename}`);
   } else {
     if (opt.filename) fontDir = path.dirname(opt.filename);
