@@ -9,6 +9,7 @@ const ProgressBar = require('cli-progress');
 const fs = require('fs');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
+const controlChars = ['\n', '\r', '\t'];
 
 const binaryLookup = {
   darwin: 'msdfgen.osx',
@@ -113,14 +114,14 @@ function generateBMFont (fontPath, opt, callback) {
   const chars = [];
   
   charset = charset.filter((e, i, self) => {
-    return i == self.indexOf(e);
-  }); // Remove duplicate
+    return (i == self.indexOf(e)) && (!controlChars.includes(e));
+  }); // Remove duplicate & control chars
 
   const os2 = font.tables.os2;
   const baseline = os2.sTypoAscender * (fontSize / font.unitsPerEm) + (distanceRange >> 1);
   const fontface = path.basename(fontPath, path.extname(fontPath));
   if(!filename) {
-    filename = path.join(fontDir, fontface); 
+    filename = fontface;
     console.log(`Use font-face as filename : ${filename}`);
   } else {
     if (opt.filename) fontDir = path.dirname(opt.filename);
@@ -139,7 +140,7 @@ function generateBMFont (fontPath, opt, callback) {
 
   let bar;
   bar = new ProgressBar.Bar({
-    format: "Genrating {percentage}%|{bar}| ({value}/{total}) {duration}s",
+    format: "Generating {percentage}%|{bar}| ({value}/{total}) {duration}s",
     clearOnComplete: true
   }, ProgressBar.Presets.shades_classic); 
   bar.start(charset.length, 0);
@@ -177,7 +178,8 @@ function generateBMFont (fontPath, opt, callback) {
         context.clearRect(0, 0, canvas.width, canvas.height);
       }
       if (index > pages.length - 1) { 
-        texname = `${filename}.${index}`;
+        if (packer.bins.length > 1) texname = `${filename}.${index}`;
+        else texname = filename; 
         pages.push(`${texname}.png`);
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));

@@ -23,7 +23,7 @@ args
   .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
   .option('-v, --vector', 'generate svg vector file for debuging')
-  .option('-u, --reuse [file.cfg]', 'use old config to append font, ommit file to save new cfg', false)
+  .option('-u, --reuse <file.cfg>', 'use old config to append font, ommit file to save new cfg')
   .option('    --tolerance <value>', 'use point tolerance to filter problematic vector shape (Defaut: 0)', 0)
   .option('    --smart-size', 'shrink atlas to the smallest possible square (Default: false)', false)
   .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
