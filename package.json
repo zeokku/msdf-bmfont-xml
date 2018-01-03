@@ -40,14 +40,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "canvas-prebuilt": "^1.6.0",
-    "cli-progress": "^1.6.0",
-    "commander": "^2.11.0",
-    "handlebars": "^4.0.10",
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
+    "cli-progress": "^1.6.1",
+    "commander": "^2.12.2",
+    "handlebars": "^4.0.11",
     "js2xmlparser": "^3.0.0",
     "map-limit": "0.0.1",
     "maxrects-packer": "^1.2.0",
-    "opentype.js": "^0.7.3"
+    "opentype.js": "^0.7.3",
+    "yargs": "^10.1.0"
   },
   "devDependencies": {
     "load-bmfont": "^1.2.3",
