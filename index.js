@@ -2,7 +2,7 @@ const utils = require('./lib/utils');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
-const MaxRectsPacker = require('maxrects-packer').MaxRectsPacker;
+const MaxRectsPacker = require('maxrects-packer');
 const Canvas = require('canvas-prebuilt');
 const path = require('path');
 const ProgressBar = require('cli-progress');
@@ -60,15 +60,17 @@ function generateBMFont (fontPath, opt, callback) {
   if (!callback) {
     throw new TypeError('missing callback');
   }
-  if (typeof opt.reuse !== 'boolean') {
-    if (path.dirname(opt.reuse).length > 0) {
-      fontDir = path.dirname(opt.reuse);
-    }
+  if (typeof opt.reuse !== 'undefined' && typeof opt.reuse !== 'boolean') {
+    // if (path.dirname(opt.reuse).length > 0) {
+    //   fontDir = path.dirname(opt.reuse);
+    // }
     if (!fs.existsSync(opt.reuse)) {
-      console.error('Re-use cfg file not found, aborting....');
-      process.exit(1);
+      console.log('Creating cfg file :' + opt.reuse);
+      opt.reuse.opt = {};
+    } else {
+      console.log('Loading cfg file :' + opt.reuse);
+      opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
     }
-    opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
   }
   if (opt.textureSize && opt.textureSize.length !== 2) {
     console.error('textureSize format shall be: width,height');
@@ -95,7 +97,7 @@ function generateBMFont (fontPath, opt, callback) {
   const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
-  const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
+  // const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
 
   // TODO: Validate options
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {
