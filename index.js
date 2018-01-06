@@ -2,7 +2,7 @@ const utils = require('./lib/utils');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
-const MaxRectsPacker = require('maxrects-packer');
+const MaxRectsPacker = require('maxrects-packer').MaxRectsPacker;
 const Canvas = require('canvas-prebuilt');
 const path = require('path');
 const ProgressBar = require('cli-progress');
@@ -60,18 +60,6 @@ function generateBMFont (fontPath, opt, callback) {
   if (!callback) {
     throw new TypeError('missing callback');
   }
-  if (typeof opt.reuse !== 'undefined' && typeof opt.reuse !== 'boolean') {
-    // if (path.dirname(opt.reuse).length > 0) {
-    //   fontDir = path.dirname(opt.reuse);
-    // }
-    if (!fs.existsSync(opt.reuse)) {
-      console.log('Creating cfg file :' + opt.reuse);
-      opt.reuse.opt = {};
-    } else {
-      console.log('Loading cfg file :' + opt.reuse);
-      opt.reuse = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
-    }
-  }
   if (opt.textureSize && opt.textureSize.length !== 2) {
     console.error('textureSize format shall be: width,height');
     process.exit(1);
@@ -79,7 +67,18 @@ function generateBMFont (fontPath, opt, callback) {
 
   callback = callback || function () {};
   opt = opt || {};
-  const reuse = typeof opt.reuse === 'boolean' ? {} : opt.reuse.opt;
+  // const reuse = (typeof opt.reuse === 'boolean' || typeof opt.reuse === 'undefined') ? {} : opt.reuse.opt;
+  let reuse, cfg = {};
+  if (typeof opt.reuse !== 'undefined' && typeof opt.reuse !== 'boolean') {
+    if (!fs.existsSync(opt.reuse)) {
+      console.log('Creating cfg file :' + opt.reuse);
+      reuse = {};
+    } else {
+      console.log('Loading cfg file :' + opt.reuse);
+      cfg = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
+      reuse = cfg.opt;
+    }
+  } else reuse = {};
   let charset = opt.charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
   const outputType = opt.outputType = utils.valueQueue([opt.outputType, reuse.outputType, "xml"]);
   let filename = utils.valueQueue([opt.filename, reuse.filename]);
@@ -135,9 +134,9 @@ function generateBMFont (fontPath, opt, callback) {
   settings.opt = JSON.parse(JSON.stringify(opt));
   delete settings.opt['reuse']; // prune previous settings
   let pages = [];
-  if (opt.reuse.packer !== undefined) {
-    pages = opt.reuse.pages;
-    packer.load(opt.reuse.packer.bins);
+  if (cfg.packer !== undefined) {
+    pages = cfg.pages;
+    packer.load(cfg.packer.bins);
   }
 
   let bar;
@@ -186,7 +185,9 @@ function generateBMFont (fontPath, opt, callback) {
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));
         let img = new Canvas.Image;
-        img.src = fs.readFileSync(path.join(fontDir, `${texname}.png`));
+        let imgPath = path.join(fontDir, `${texname}.png`);
+        console.log('Loading previous image : ', imgPath);
+        img.src = fs.readFileSync(imgPath);
         context.drawImage(img, 0, 0);
       }
       bin.rects.forEach(rect => {

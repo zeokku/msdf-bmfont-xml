@@ -17,7 +17,7 @@ args
   .option('-f, --output-type <format>', 'font file format: xml(default) | json', /^(xml|json)$/i, 'xml')
   .option('-o, --filename <atlas_path>', 'filename of font textures (defaut: font-face) font filename always set to font-face name')
   .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)', 42)
-  .option('-i, --charset-file <charset>', 'user-specified charactors from text-file', parseFileExist)
+  .option('-i, --charset-file <charset>', 'user-specified charactors from text-file', fileExistValidate)
   .option('-m, --texture-size <w,h>', 'ouput texture atlas size (defaut: 256,256)', (v) => {return v.split(',')}, [256, 256])
   .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)', 1)
   .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)', 4)
@@ -29,7 +29,7 @@ args
   .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
   .option('    --square', 'atlas size shall be square (Default: false)', false)
   .action(function(file){
-    fontFile = parseFileExist(file);
+    fontFile = fileExistValidate(file);
   }).parse(process.argv);
 
 //
@@ -80,6 +80,7 @@ if (typeof opt.fontFile === 'undefined') {
   console.error('No font file specified, aborting.... use -h for help');
   process.exit(1);
 }
+if (typeof opt.reuse !== 'boolean') opt.reuse = fileValidate(opt.reuse);
 
 fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
   if (error) {
@@ -118,9 +119,10 @@ fs.readFile(opt.charsetFile || '', 'utf8', (error, data) => {
       console.log('wrote font file        : ', font.filename);
     });
     if(opt.reuse !== false) {
-      fs.writeFile(`${textures[0].filename}.cfg`, JSON.stringify(font.settings, null, '\t'), (err) => {
+      let cfgFileName = typeof opt.reuse === 'boolean' ? `${textures[0].filename}.cfg` : opt.reuse;
+      fs.writeFile(cfgFileName, JSON.stringify(font.settings, null, '\t'), (err) => {
         if (err) throw err;
-        console.log('wrote cfg file         : ', `${textures[0].filename}.cfg`);
+        console.log('wrote cfg file         : ', cfgFileName);
       });
     }
   });
@@ -153,7 +155,7 @@ function longestLength(arr) {
   }, 0);
 };
 
-function parseFileExist(filePath) {
+function fileExistValidate(filePath) {
   try {
     if(fs.statSync(filePath).isFile()) return path.normalize(filePath);
     else {
@@ -166,8 +168,8 @@ function parseFileExist(filePath) {
   }
 }
 
-function parseFile(filePath) {
-  if (filePath === path.basename(filePath)) {
+function fileValidate(filePath) {
+  if (require('is-invalid-path')(filePath)) {
     console.error('File: ', filePath, ' not valid! Aborting...');
     process.exit(1);
   } else return path.normalize(filePath);
