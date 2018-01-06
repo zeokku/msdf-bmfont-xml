@@ -40,13 +40,14 @@
   },
   "license": "MIT",
   "dependencies": {
-    "canvas-prebuilt": "^1.6.0",
-    "cli-progress": "^1.6.0",
-    "commander": "^2.11.0",
-    "handlebars": "^4.0.10",
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
+    "cli-progress": "^1.7.0",
+    "commander": "^2.12.2",
+    "handlebars": "^4.0.11",
+    "is-invalid-path": "^0.1.0",
     "js2xmlparser": "^3.0.0",
     "map-limit": "0.0.1",
-    "maxrects-packer": "^1.2.0",
+    "maxrects-packer": "^2.0.0",
     "opentype.js": "^0.7.3"
   },
   "devDependencies": {
@@ -54,6 +55,8 @@
     "run-parallel": "^1.1.6",
     "three": "^0.86.0",
     "three-bmfont-text": "^2.2.1",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2",
     "xml2js": "^0.4.19"
   }
 }
