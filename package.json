@@ -40,6 +40,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "arabic-persian-reshaper": "^1.0.0",
     "canvas-prebuilt": "^1.6.5-prerelease.1",
     "cli-progress": "^1.7.0",
     "commander": "^2.12.2",

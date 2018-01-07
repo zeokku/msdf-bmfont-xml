@@ -1,4 +1,5 @@
 const utils = require('./lib/utils');
+const reshaper = require('arabic-persian-reshaper');
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
@@ -36,6 +37,7 @@ module.exports = generateBMFont;
  *            smartSize : shrink atlas to the smallest possible square (Default: false)
  *            pot : atlas size shall be power of 2 (Default: false)
  *            square : atlas size shall be square (Default: false)
+ *            rtl : use RTL charators fix (Default: false)
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
  *
  */
@@ -79,7 +81,6 @@ function generateBMFont (fontPath, opt, callback) {
       reuse = cfg.opt;
     }
   } else reuse = {};
-  let charset = opt.charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || reuse.charset || defaultCharset;
   const outputType = opt.outputType = utils.valueQueue([opt.outputType, reuse.outputType, "xml"]);
   let filename = utils.valueQueue([opt.filename, reuse.filename]);
   const fontSize = opt.fontSize = utils.valueQueue([opt.fontSize, reuse.fontSize, 42]);
@@ -96,7 +97,9 @@ function generateBMFont (fontPath, opt, callback) {
   const square = opt.square = utils.valueQueue([opt.square, reuse.square, false]);
   const debug = opt.vector || false;
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
-  // const cfg = typeof opt.reuse === 'boolean' ? opt.reuse : false;
+  const isRTL = opt.rtl = utils.valueQueue([opt.rtl, reuse.rtl, false]);
+  if (isRTL) opt.charset = require('arabic-persian-reshaper').convertArabic(opt.charset);
+  let charset = opt.charset = (typeof opt.charset === 'string' ? Array.from(opt.charset) : opt.charset) || reuse.charset || defaultCharset;
 
   // TODO: Validate options
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {

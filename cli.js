@@ -28,6 +28,7 @@ args
   .option('    --smart-size', 'shrink atlas to the smallest possible square (Default: false)', false)
   .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
   .option('    --square', 'atlas size shall be square (Default: false)', false)
+  .option('    --rtl', 'use RTL charators fix (Default: false)', false)
   .action(function(file){
     fontFile = fileExistValidate(file);
   }).parse(process.argv);
@@ -57,6 +58,7 @@ opt.reuse = utils.valueQueue([opt.reuse, false]);
 opt.smartSize = utils.valueQueue([opt.smartSize, false]);
 opt.pot = utils.valueQueue([opt.pot, false]);
 opt.square = utils.valueQueue([opt.square, false]);
+opt.rtl = utils.valueQueue([opt.rtl, false]);
 
 //
 // Display options 
