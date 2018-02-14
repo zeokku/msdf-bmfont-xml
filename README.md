@@ -45,6 +45,7 @@ Usage: msdf-bmfont [options] <font-file>
         --smart-size              shrink atlas to the smallest possible square (Default: false)
         --pot                     atlas size shall be power of 2 (Default: false)
         --square                  atlas size shall be square (Default: false)
+        --rtl                     use RTL(Arabic/Persian) charators fix (Default: false)
     -h, --help                    output usage information
 ```
 
@@ -150,7 +151,15 @@ Options:
 - `roundDecimal` (Number)
   - rounded digits of the output font metics. For `xml` output, `roundDecimal: 0` recommended.
 - `vector` (Boolean)
-  - output a SVG Vector file for debugging. Defautls to `false`
+  - output a SVG Vector file for debugging. Defauts to `false`
+- `smart-size` (Boolean)             
+  - shrink atlas to the smallest possible square. Default: `false`
+- `pot` (Boolean)
+  - output atlas size shall be power of 2. Default: `false`
+- `square` (Boolean)
+  - output atlas size shall be square. Default: `false`
+- `rtl` (Boolean)
+  - use RTL(Arabic/Persian) charators fix. Default: `false`
 
 The `callback` is called with the arguments `(error, textures, font)`
 

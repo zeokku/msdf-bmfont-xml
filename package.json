@@ -1,6 +1,6 @@
 {
   "name": "msdf-bmfont-xml",
-  "version": "2.3.0",
+  "version": "2.3.2",
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
@@ -40,6 +40,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "arabic-persian-reshaper": "^1.0.0",
     "canvas-prebuilt": "^1.6.5-prerelease.1",
     "cli-progress": "^1.7.0",
     "commander": "^2.12.2",
