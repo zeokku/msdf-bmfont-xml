@@ -46,7 +46,7 @@ function generateBMFont (fontPath, opt, callback) {
   if (binName === undefined) {
     throw new Error(`No msdfgen binary for platform ${process.platform}.`);
   }
-  const binaryPath = path.join(__dirname, 'bin', binName);
+  const binaryPath = path.join(__dirname, 'bin', process.platform, binName);
 
   if (!fontPath || typeof fontPath !== 'string') {
     throw new TypeError('must specify a font path');
