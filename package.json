@@ -41,7 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "arabic-persian-reshaper": "^1.0.0",
-    "canvas-prebuilt": "^1.6.5-prerelease.1",
+    "canvas-prebuilt": "2.0.0-alpha.2",
     "cli-progress": "^1.7.0",
     "commander": "^2.12.2",
     "handlebars": "^4.0.11",
