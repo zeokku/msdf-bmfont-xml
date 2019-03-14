@@ -137,8 +137,8 @@ Options:
   - the characters to include in the bitmap font. Defaults to all ASCII printable characters. 
 - `fontSize` (Number)
   - the font size at which to generate the distance field. Defaults to `42`
-- `textureWidth, textureHeight` (Number)
-  - the dimensions of an output texture sheet, normally power-of-2 for GPU usage. Both dimensions default to `512`
+- `textureSize` (Array[2])
+  - the dimensions of an output texture sheet, normally power-of-2 for GPU usage. Both dimensions default to `[512, 512]`
 - `texturePadding` (Number)
   - pixels between each glyph in the texture. Defaults to `2`
 - `fieldType` (String)
