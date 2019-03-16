@@ -191,7 +191,11 @@ function generateBMFont (fontPath, opt, callback) {
         let imgPath = path.join(fontDir, `${texname}.png`);
         console.log('Loading previous image : ', imgPath);
         img.src = fs.readFileSync(imgPath);
-        context.drawImage(img, 0, 0);
+        img.then(() => {
+          context.drawImage(img, 0, 0);
+        }).catch(err => {
+          console.log("File read error: ", err);
+        })
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
@@ -351,7 +355,7 @@ function generateImage (opt, callback) {
       width = 0;
       height = 0;
     } else {
-      imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
+      imageData = Canvas.createImageData(new Uint8ClampedArray(pixels), width, height);
     }
     const container = {
       data: {
