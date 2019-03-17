@@ -42,23 +42,23 @@
   "license": "MIT",
   "dependencies": {
     "arabic-persian-reshaper": "^1.0.0",
-    "canvas": "^2.3.1",
-    "cli-progress": "^1.8.0",
+    "cli-progress": "^2.1.1",
     "commander": "^2.19.0",
     "handlebars": "^4.1.0",
-    "is-invalid-path": "^0.1.0",
-    "js2xmlparser": "^3.0.0",
+    "is-invalid-path": "^1.0.2",
+    "jimp": "^0.6.0",
+    "js2xmlparser": "^4.0.0",
     "map-limit": "0.0.1",
-    "maxrects-packer": "^2.0.0",
-    "opentype.js": "^0.7.3"
+    "maxrects-packer": "^2.0.1",
+    "opentype.js": "^0.11.0"
   },
   "devDependencies": {
     "load-bmfont": "^1.4.0",
     "run-parallel": "^1.1.9",
-    "three": "^0.86.0",
+    "three": "^0.102.1",
     "three-bmfont-text": "^2.3.0",
     "tslint": "^5.14.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.3.3333",
     "xml2js": "^0.4.19"
   }
 }
