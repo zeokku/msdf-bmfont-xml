@@ -346,14 +346,10 @@ function generateImage (opt, callback) {
     }
     let imageData;
     if (isNaN(channelCount) || !rawImageData.some(x => x !== 0)) { // if character is blank
-      console.warn(`no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
-      console.warn(command);
-      console.warn('---');
+      console.warn(`\nWarning: no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
       width = 0;
       height = 0;
-      // imageData = new Jimp(width, height);
     } else {
-      //   imageData = Canvas.createImageData(new Uint8ClampedArray(pixels), width, height);
       const buffer = new Uint8ClampedArray(pixels);
       imageData = new Jimp({data: buffer, width: width, height: height});
     }
