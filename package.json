@@ -4,7 +4,7 @@
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
-    "debug": "cd test/output && node --inspect-brk=9229 ../../cli.js -f json -v -u -o font -m 512,256 -t msdf -s 42 -r 4 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
+    "debug": "cd test/output && node --inspect-brk=9229 ../../cli.js -f json -o font -m 512,256 -t msdf -s 46 -r 5 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
     "test": "cd test/output && node ../../cli.js -f json -v -u -o font -m 512,256 -t msdf -s 42 -r 4 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
     "render": "npm test && devtool test/test-render.js -s -- 'output/DIN_CB.fnt'"
   },
@@ -42,23 +42,23 @@
   "license": "MIT",
   "dependencies": {
     "arabic-persian-reshaper": "^1.0.0",
-    "canvas": "^2.3.1",
-    "cli-progress": "^1.8.0",
+    "cli-progress": "^2.1.1",
     "commander": "^2.19.0",
     "handlebars": "^4.1.0",
     "is-invalid-path": "^1.0.2",
-    "js2xmlparser": "^3.0.0",
+    "jimp": "^0.6.0",
+    "js2xmlparser": "^4.0.0",
     "map-limit": "0.0.1",
-    "maxrects-packer": "^2.0.0",
-    "opentype.js": "^0.9.0"
+    "maxrects-packer": "^2.0.1",
+    "opentype.js": "^0.11.0"
   },
   "devDependencies": {
     "load-bmfont": "^1.4.0",
     "run-parallel": "^1.1.9",
-    "three": "^0.94.0",
+    "three": "^0.102.1",
     "three-bmfont-text": "^2.3.0",
     "tslint": "^5.14.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.3.3333",
     "xml2js": "^0.4.19"
   }
 }

@@ -4,10 +4,11 @@ const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
 const MaxRectsPacker = require('maxrects-packer').MaxRectsPacker;
-const Canvas = require('canvas');
 const path = require('path');
 const ProgressBar = require('cli-progress');
 const fs = require('fs');
+const buffer = require('buffer').Buffer;
+const Jimp = require('jimp');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 const controlChars = ['\n', '\r', '\t'];
@@ -165,37 +166,35 @@ function generateBMFont (fontPath, opt, callback) {
       bar.increment();
       cb(null, res);
     });
-  }, (err, results) => {
+  }, async (err, results) => {
     if (err) callback(err);
     bar.stop();
 
     packer.addArray(results);
-    const textures = packer.bins.map((bin, index) => {
+    const textures = packer.bins.map(async (bin, index) => {
       let svg = "";
       let texname = "";
-      const canvas = Canvas.createCanvas(bin.width, bin.height);
-      const context = canvas.getContext('2d');
-      if(fieldType === "msdf") {
-        context.fillStyle = '#000000';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-      } else {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      let fillColor = fieldType === "msdf" ? 0x000000ff : 0x00000000;
+      const img = new Jimp(bin.width, bin.height, fillColor);
       if (index > pages.length - 1) { 
         if (packer.bins.length > 1) texname = `${filename}.${index}`;
         else texname = filename; 
         pages.push(`${texname}.png`);
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));
-        let img = new Canvas.Image;
         let imgPath = path.join(fontDir, `${texname}.png`);
         console.log('Loading previous image : ', imgPath);
-        img.src = fs.readFileSync(imgPath);
-        context.drawImage(img, 0, 0);
+        Jimp.read(imgPath).then((err, image)=> {
+          if (err) throw err;
+          img.composite(image, 0, 0);
+        })
+        .catch(err => {
+          console.warn("File read error: ", err);
+        });
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
-          context.putImageData(rect.data.imageData, rect.x, rect.y);
+          img.composite(rect.data.imageData, rect.x, rect.y);
           if (debug) {
             const x_woffset = rect.x - rect.data.fontData.xoffset + (distanceRange >> 1);
             const y_woffset = rect.y - rect.data.fontData.yoffset + baseline + (distanceRange >> 1);
@@ -208,9 +207,10 @@ function generateBMFont (fontPath, opt, callback) {
         charData.page = index;
         chars.push(rect.data.fontData);
       });
+      const buffer = await img.getBufferAsync(Jimp.MIME_PNG);
       let tex = {
         filename: path.join(fontDir, texname),
-        texture: canvas.toBuffer()
+        texture: buffer 
       }
       if (debug) tex.svg = svg;
       return tex;
@@ -275,8 +275,9 @@ function generateBMFont (fontPath, opt, callback) {
     settings.packer.bins = packer.save(); 
     fontFile.settings = settings;
 
+    const asyncTextures = await Promise.all(textures);
     console.log("\nGeneration complete!\n");
-    callback(null, textures, fontFile);
+    callback(null, asyncTextures, fontFile);
   });
 }
 
@@ -345,13 +346,12 @@ function generateImage (opt, callback) {
     }
     let imageData;
     if (isNaN(channelCount) || !rawImageData.some(x => x !== 0)) { // if character is blank
-      // console.warn(`no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
-      // console.warn(command);
-      // console.warn('---');
+      console.warn(`\nWarning: no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
       width = 0;
       height = 0;
     } else {
-      imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
+      const buffer = new Uint8ClampedArray(pixels);
+      imageData = new Jimp({data: buffer, width: width, height: height});
     }
     const container = {
       data: {
