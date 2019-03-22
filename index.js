@@ -9,6 +9,7 @@ const ProgressBar = require('cli-progress');
 const fs = require('fs');
 const buffer = require('buffer').Buffer;
 const Jimp = require('jimp');
+const readline = require('readline');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 const controlChars = ['\n', '\r', '\t'];
@@ -346,7 +347,9 @@ function generateImage (opt, callback) {
     }
     let imageData;
     if (isNaN(channelCount) || !rawImageData.some(x => x !== 0)) { // if character is blank
-      console.warn(`\nWarning: no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
+      readline.clearLine(process.stdout);
+      readline.cursorTo(process.stdout, 0);
+      console.log(`Warning: no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
       width = 0;
       height = 0;
     } else {
