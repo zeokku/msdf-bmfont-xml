@@ -4,7 +4,7 @@
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
   "main": "index.js",
   "scripts": {
-    "debug": "cd test/output && node --inspect-brk=9229 ../../cli.js -f json -o font -m 512,256 -t msdf -s 46 -r 5 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
+    "debug": "cd test/output && node --inspect-brk=9229 ../../cli.js -f json -o font -m 512,256 -t msdf -s 46 -r 5 -p 2 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
     "test": "cd test/output && node ../../cli.js -f json -v -u -o font -m 512,256 -t msdf -s 42 -r 4 --smart-size --pot ../../assets/fonts/DIN_CB.ttf",
     "render": "npm test && devtool test/test-render.js -s -- 'output/DIN_CB.fnt'"
   },
@@ -44,12 +44,12 @@
     "arabic-persian-reshaper": "^1.0.0",
     "cli-progress": "^2.1.1",
     "commander": "^2.19.0",
-    "handlebars": "^4.1.0",
+    "handlebars": "^4.1.1",
     "is-invalid-path": "^1.0.2",
     "jimp": "^0.6.0",
     "js2xmlparser": "^4.0.0",
     "map-limit": "0.0.1",
-    "maxrects-packer": "^2.0.1",
+    "maxrects-packer": "^2.0.2",
     "opentype.js": "^0.11.0"
   },
   "devDependencies": {
