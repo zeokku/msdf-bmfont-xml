@@ -113,7 +113,7 @@ function generateBMFont (fontPath, opt, callback) {
   if (font.outlinesFormat !== 'truetype' && font.outlinesFormat !== 'cff') {
     throw new TypeError('must specify a truetype font (ttf, otf, woff)');
   }
-  const packer = new MaxRectsPacker(textureWidth, textureHeight, Number(texturePadding), {
+  const packer = new MaxRectsPacker(textureWidth, textureHeight, texturePadding, {
     smart: smartSize,
     pot: pot,
     square: square,
