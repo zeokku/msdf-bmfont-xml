@@ -45,6 +45,7 @@ Usage: msdf-bmfont [options] <font-file>
         --smart-size              shrink atlas to the smallest possible square (Default: false)
         --pot                     atlas size shall be power of 2 (Default: false)
         --square                  atlas size shall be square (Default: false)
+        --rot                     allow 90-degree rotation while packing (Default: false)
         --rtl                     use RTL(Arabic/Persian) charators fix (Default: false)
     -h, --help                    output usage information
 ```
@@ -158,6 +159,8 @@ Options:
   - output atlas size shall be power of 2. Default: `false`
 - `square` (Boolean)
   - output atlas size shall be square. Default: `false`
+- `rot` (Boolean)
+  - allow 90-degree rotation while packing. Default: `false`
 - `rtl` (Boolean)
   - use RTL(Arabic/Persian) charators fix. Default: `false`
 

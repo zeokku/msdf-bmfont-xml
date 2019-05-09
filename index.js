@@ -39,6 +39,7 @@ module.exports = generateBMFont;
  *            smartSize : shrink atlas to the smallest possible square (Default: false)
  *            pot : atlas size shall be power of 2 (Default: false)
  *            square : atlas size shall be square (Default: false)
+ *            rot : allow 90-degree rotation while packing (Default: false)
  *            rtl : use RTL charators fix (Default: false)
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font) 
  *
