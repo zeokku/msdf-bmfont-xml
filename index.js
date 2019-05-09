@@ -100,6 +100,7 @@ function generateBMFont (fontPath, opt, callback) {
   const debug = opt.vector || false;
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
   const isRTL = opt.rtl = utils.valueQueue([opt.rtl, reuse.rtl, false]);
+  const allowRotation = opt.rot = utils.valueQueue([opt.rot, reuse.rot, false]);
   if (isRTL) opt.charset = require('arabic-persian-reshaper').convertArabic(opt.charset);
   let charset = opt.charset = (typeof opt.charset === 'string' ? Array.from(opt.charset) : opt.charset) || reuse.charset || defaultCharset;
 
@@ -115,7 +116,8 @@ function generateBMFont (fontPath, opt, callback) {
   const packer = new MaxRectsPacker(textureWidth, textureHeight, Number(texturePadding), {
     smart: smartSize,
     pot: pot,
-    square: square 
+    square: square,
+    allowRotation: allowRotation
   });
   const chars = [];
   
@@ -195,6 +197,9 @@ function generateBMFont (fontPath, opt, callback) {
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
+          if (rect.rot) {
+            rect.data.imageData.rotate(90);
+          }
           img.composite(rect.data.imageData, rect.x, rect.y);
           if (debug) {
             const x_woffset = rect.x - rect.data.fontData.xoffset + (distanceRange >> 1);
