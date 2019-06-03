@@ -270,7 +270,7 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if(roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal);
+    if(roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal, true);
     let fontFile = {};
     const ext = outputType === "json" ? `.json` : `.fnt`;
     fontFile.filename = path.join(fontDir, fontface + ext);
