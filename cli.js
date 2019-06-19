@@ -20,6 +20,7 @@ args
   .option('-i, --charset-file <charset>', 'user-specified charactors from text-file', fileExistValidate)
   .option('-m, --texture-size <w,h>', 'ouput texture atlas size (defaut: 2048,2048)', (v) => {return v.split(',')}, [2048, 2048])
   .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)', 1)
+  .option('-b, --border <n>', 'space between glyphs textures & edge (default: 0)', 0)
   .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)', 4)
   .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', /^(msdf|sdf|psdf|svg)$/i, 'msdf')
   .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)

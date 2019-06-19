@@ -92,6 +92,7 @@ function generateBMFont (fontPath, opt, callback) {
   const textureWidth = opt.textureWidth = utils.valueQueue([opt.textureSize || reuse.textureSize, [512, 512]])[0];
   const textureHeight = opt.textureHeight = utils.valueQueue([opt.textureSize || reuse.textureSize, [512, 512]])[1];
   const texturePadding = opt.texturePadding = utils.valueQueue([opt.texturePadding, reuse.texturePadding, 1]);
+  const border = opt.border = utils.valueQueue([opt.border, reuse.border, 0]);
   const distanceRange = opt.distanceRange = utils.valueQueue([opt.distanceRange, reuse.distanceRange, 4]);
   const fieldType = opt.fieldType = utils.valueQueue([opt.fieldType, reuse.fieldType, 'msdf']);
   const roundDecimal = opt.roundDecimal = utils.valueQueue([opt.roundDecimal, reuse.roundDecimal]); // if no roudDecimal option, left null as-is
@@ -118,7 +119,9 @@ function generateBMFont (fontPath, opt, callback) {
     smart: smartSize,
     pot: pot,
     square: square,
-    allowRotation: allowRotation
+    allowRotation: allowRotation,
+    tag: false,
+    border: border
   });
   const chars = [];
   
