@@ -13,7 +13,7 @@ app.stop();
 const fontFace = getURLParameter("f") || "DIN_CB";
 const fontFile = `assets/fonts/${fontFace}.fnt`;
 // const fontFace = fontFile.split('\\').pop().split('/').pop().split('.').shift();
-const text = getURLParameter("t") || "msdf-bmfont-xml\nTest render";
+const text = getURLParameter("t") || "The quick brown fox jumps\nover the lazy dog";
 
 const resourceList = [ fontFile ];
 app.loader.add(resourceList).load(onAssetsLoaded);

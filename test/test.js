@@ -3,7 +3,7 @@ const handler = require('serve-handler');
 const http = require('http');
 
 const fontFile = process.argv[3] || "DIN_CB";
-const text = process.argv[2] || "msdf-bmfont-xml\nTest render";
+const text = process.argv[2] || "The quick brown fox jumps\nover the lazy dog";
 
 const server = http.createServer((request, response) => {
     // You pass two more arguments for config and middleware

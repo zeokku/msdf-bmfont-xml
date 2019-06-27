@@ -12,9 +12,11 @@ This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to genera
 ![Preview image](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/msdf-bmfont-xml.png)
 
 ## Install as CLI
+
 ```bash
-$ npm install msdf-bmfont-xml -g
+npm install msdf-bmfont-xml -g
 ```
+
 Then you just need to call `msdf-bmfont` from console to generate font file.
 Type in `msdf-bmfont --help` for more detail usage.
 
@@ -22,7 +24,7 @@ Type in `msdf-bmfont --help` for more detail usage.
 
 ### Usage
 
-```
+```bash
 Usage: msdf-bmfont [options] <font-file>
 
   Creates a BMFont compatible bitmap font of signed distance fields from a font file
@@ -31,12 +33,13 @@ Usage: msdf-bmfont [options] <font-file>
 
     -V, --version                 output the version number
     -f, --output-type <format>    font file format: xml(default) | json
-    -o, --filename <atlas_path>   filename of font textures (defaut: font-face) 
+    -o, --filename <atlas_path>   filename of font textures (defaut: font-face)
                                   font filename always set to font-face name
     -s, --font-size <fontSize>    font size for generated textures (default: 42)
     -i, --charset-file <charset>  user-specified charactors from text-file
     -m, --texture-size <w,h>      Width/Height of generated textures (default: 512,512)
     -p, --texture-padding <n>     padding between glyphs (default: 1)
+    -b, --border <n>              space between glyphs textures & edge (default: 0)
     -r, --distance-range <n>      distance range for SDF (default: 4)
     -t, --field-type <type>       msdf(default) | sdf | psdf | svg
     -d, --round-decimal <digit>   rounded digits of the output font file. (Defaut: 0)
@@ -51,7 +54,7 @@ Usage: msdf-bmfont [options] <font-file>
     -h, --help                    output usage information
 ```
 
-### Examples
+### CLI Examples
 
 Generate a multi-channel signed distance field font atlas with ASCII charset, font size 42, spread 3, maximum texture size 512x256, padding 1, and save out config file:
 
@@ -81,17 +84,16 @@ How about fire up some graphic editor and add some neat effect and lay on the ou
 
 ![final](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/atlas.2.jpg)
 
-
-
 ## Install as Module
 
 ```bash
-$ npm install msdf-bmfont-xml
+npm install msdf-bmfont-xml
 ```
 
-## Examples
+### Module usage Examples
 
 Writing the distance fields and font data to disk:
+
 ```js
 const generateBMFont = require('msdf-bmfont-xml');
 const fs = require('fs');
@@ -110,6 +112,7 @@ generateBMFont('Some-Font.ttf', (error, textures, font) => {
 ```
 
 Generating a single channel signed distance field with a custom character set:
+
 ```js
 const generateBMFont = require('msdf-bmfont');
 
@@ -118,31 +121,34 @@ const opt = {
   fieldType: 'sdf'
 };
 generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
-	...
+  ...
 });
 ```
 
-## Usage
+### API
 
 #### `generateBMFont(fontPath, [opt], callback)`
 
 Renders a bitmap font from the font at `fontPath` with optional `opt` settings, triggering `callback` on complete.
 
 Options:
+
 - `outputType` (String)
   - type of output font file. Defaults to `xml`
-    - `xml` a BMFont standard .fnt file which is wildly supported. 
+    - `xml` a BMFont standard .fnt file which is wildly supported.
     - `json` a JSON file compatible with [Hiero](https://github.com/libgdx/libgdx/wiki/Hiero)
 - `filename` (String)
   - filename of both font file and font atlas. If omited, font face name is used.
 - `charset` (String|Array)
-  - the characters to include in the bitmap font. Defaults to all ASCII printable characters. 
+  - the characters to include in the bitmap font. Defaults to all ASCII printable characters.
 - `fontSize` (Number)
   - the font size at which to generate the distance field. Defaults to `42`
 - `textureSize` (Array[2])
   - the dimensions of an output texture sheet, normally power-of-2 for GPU usage. Both dimensions default to `[512, 512]`
 - `texturePadding` (Number)
   - pixels between each glyph in the texture. Defaults to `2`
+- `border` (Number)
+  - space between glyphs textures & edge. Defaults to `0`
 - `fieldType` (String)
   - what kind of distance field to generate. Defaults to `msdf`. Must be one of:
     - `msdf` Multi-channel signed distance field
@@ -154,7 +160,7 @@ Options:
   - rounded digits of the output font metics. For `xml` output, `roundDecimal: 0` recommended.
 - `vector` (Boolean)
   - output a SVG Vector file for debugging. Defauts to `false`
-- `smart-size` (Boolean)             
+- `smart-size` (Boolean)
   - shrink atlas to the smallest possible square. Default: `false`
 - `pot` (Boolean)
   - output atlas size shall be power of 2. Default: `false`
@@ -169,7 +175,7 @@ The `callback` is called with the arguments `(error, textures, font)`
 
 - `error` on success will be null/undefined
 - `textures` an array of js objects of texture spritesheet.
-  - `textures[index].filename` Spritesheet filename 
+  - `textures[index].filename` Spritesheet filename
   - `textures[index].texture` Image Buffers, containing the PNG data of one texture sheet
 - `font` an object containing the BMFont data, to be used to render the font
   - `font.filename` font filename
