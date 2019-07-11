@@ -182,7 +182,7 @@ function generateBMFont (fontPath, opt, callback) {
       let svg = "";
       let texname = "";
       let fillColor = fieldType === "msdf" ? 0x000000ff : 0x00000000;
-      const img = new Jimp(bin.width, bin.height, fillColor);
+      let img = new Jimp(bin.width, bin.height, fillColor);
       if (index > pages.length - 1) { 
         if (packer.bins.length > 1) texname = `${filename}.${index}`;
         else texname = filename; 
@@ -191,13 +191,11 @@ function generateBMFont (fontPath, opt, callback) {
         texname = path.basename(pages[index], path.extname(pages[index]));
         let imgPath = path.join(fontDir, `${texname}.png`);
         console.log('Loading previous image : ', imgPath);
-        Jimp.read(imgPath).then((err, image)=> {
-          if (err) throw err;
-          img.composite(image, 0, 0);
-        })
-        .catch(err => {
+        const loader = Jimp.read(imgPath);
+        loader.catch(err => {
           console.warn("File read error: ", err);
         });
+        img = await loader;
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
