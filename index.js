@@ -223,6 +223,9 @@ function generateBMFont (fontPath, opt, callback) {
       if (debug) tex.svg = svg;
       return tex;
     });
+
+    const asyncTextures = await Promise.all(textures);
+
     const kernings = [];
     charset.forEach(first => {
       charset.forEach(second => {
@@ -283,7 +286,6 @@ function generateBMFont (fontPath, opt, callback) {
     settings.packer.bins = packer.save(); 
     fontFile.settings = settings;
 
-    const asyncTextures = await Promise.all(textures);
     console.log("\nGeneration complete!\n");
     callback(null, asyncTextures, fontFile);
   });
