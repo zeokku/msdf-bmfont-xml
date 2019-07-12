@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.2](https://github.com/soimy/msdf-bmfont-xml/compare/v2.5.1...v2.5.2) (2019-07-12)
+
+
+### Bug Fixes
+
+* async texture generation skips fontData stringify ([230d0b3](https://github.com/soimy/msdf-bmfont-xml/commit/230d0b3)), closes [#39](https://github.com/soimy/msdf-bmfont-xml/issues/39)
+
+
+
 ### [2.5.1](https://github.com/soimy/msdf-bmfont-xml/compare/v2.5.0...v2.5.1) (2019-07-11)
 
 
