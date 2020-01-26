@@ -6,9 +6,10 @@
   "scripts": {
     "debug": "cd test/assets/fonts && node --inspect-brk=9229 ../../../cli.js -f json -o font -u -m 512,256 -t msdf -s 42 -r 5 -p 2 --smart-size --pot ../../../assets/fonts/DIN_CB.ttf",
     "test": "npm run test:disk && npm run test:memory",
-    "test:disk": "cd test/assets/fonts && node ../../../cli.js -f xml -v -u -o font -m 512,256 -t msdf -s 42 -r 4 -p 2 -b 10 --smart-size --pot ../../../assets/fonts/DIN_CB.ttf",
+    "test:disk": "cd test/assets/fonts && node ../../../cli.js -f xml -o DIN_CB -v -u -m 512,256 -t msdf -s 42 -r 4 -p 2 --smart-size --pot ../../../assets/fonts/DIN_CB.ttf",
     "test:memory": "node test/test_memory.js",
-    "render": "npm test && node test/test.js",
+    "test:rtl": "cd test/assets/fonts && node ../../../cli.js -f xml -o Iransans -i ../../../assets/charset/charset.persian.txt -v -u -m 512,256 -t msdf -s 42 -r 4 -p 2 --smart-size --pot ../../../assets/fonts/Iransans.ttf",
+    "render": "npm run test:disk && node test/test.js",
     "version": "standard-version"
   },
   "bin": {
@@ -44,10 +45,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "arabic-persian-reshaper": "^1.0.0",
+    "arabic-persian-reshaper": "^1.0.1",
     "cli-progress": "^2.1.1",
     "commander": "^2.19.0",
-    "handlebars": "^4.1.2",
+    "handlebars": "^4.7.2",
     "is-invalid-path": "^1.0.2",
     "jimp": "^0.6.0",
     "js2xmlparser": "^4.0.0",

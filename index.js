@@ -1,5 +1,5 @@
 const utils = require('./lib/utils');
-const reshaper = require('arabic-persian-reshaper');
+const reshaper = require('arabic-persian-reshaper').ArabicShaper;
 const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
@@ -97,7 +97,7 @@ function generateBMFont (fontPath, opt, callback) {
   const tolerance = opt.tolerance = utils.valueQueue([opt.tolerance, reuse.tolerance, 0]);
   const isRTL = opt.rtl = utils.valueQueue([opt.rtl, reuse.rtl, false]);
   const allowRotation = opt.rot = utils.valueQueue([opt.rot, reuse.rot, false]);
-  if (isRTL) opt.charset = require('arabic-persian-reshaper').convertArabic(opt.charset);
+  if (isRTL) opt.charset = reshaper.convertArabic(opt.charset);
   let charset = opt.charset = (typeof opt.charset === 'string' ? Array.from(opt.charset) : opt.charset) || reuse.charset || defaultCharset;
 
   // TODO: Validate options

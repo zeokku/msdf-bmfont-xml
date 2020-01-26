@@ -30,7 +30,7 @@ args
   .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
   .option('    --square', 'atlas size shall be square (Default: false)', false)
   .option('    --rot', 'allow 90-degree rotation while packing (Default: false)', false)
-  .option('    --rtl', 'use RTL(Arabic/Persian) charators fix (Default: false)', false)
+  .option('    --rtl', 'use RTL(Arabic/Persian) charactors fix (Default: false)', false)
   .action(function(file){
     fontFile = fileExistValidate(file);
   }).parse(process.argv);
