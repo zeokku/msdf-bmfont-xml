@@ -27,31 +27,29 @@ Type in `msdf-bmfont --help` for more detail usage.
 ```bash
 Usage: msdf-bmfont [options] <font-file>
 
-  Creates a BMFont compatible bitmap font of signed distance fields from a font file
+Creates a BMFont compatible bitmap font of signed distance fields from a font file
 
-  Options:
-
-    -V, --version                 output the version number
-    -f, --output-type <format>    font file format: xml(default) | json
-    -o, --filename <atlas_path>   filename of font textures (defaut: font-face)
-                                  font filename always set to font-face name
-    -s, --font-size <fontSize>    font size for generated textures (default: 42)
-    -i, --charset-file <charset>  user-specified charactors from text-file
-    -m, --texture-size <w,h>      Width/Height of generated textures (default: 512,512)
-    -p, --texture-padding <n>     padding between glyphs (default: 1)
-    -b, --border <n>              space between glyphs textures & edge (default: 0)
-    -r, --distance-range <n>      distance range for SDF (default: 4)
-    -t, --field-type <type>       msdf(default) | sdf | psdf | svg
-    -d, --round-decimal <digit>   rounded digits of the output font file. (Defaut: 0)
-    -v, --vector                  generate svg vector file for debuging
-    -u, --reuse [file.cfg]        use old config to append font, ommit file to save new cfg
-        --tolerance <value>       use point tolerance to filter problematic vector shape (Defaut: 0)
-        --smart-size              shrink atlas to the smallest possible square (Default: false)
-        --pot                     atlas size shall be power of 2 (Default: false)
-        --square                  atlas size shall be square (Default: false)
-        --rot                     allow 90-degree rotation while packing (Default: false)
-        --rtl                     use RTL(Arabic/Persian) charators fix (Default: false)
-    -h, --help                    output usage information
+Options:
+  -V, --version                 output the version number
+  -f, --output-type <format>    font file format: xml(default) | json (default: "xml")
+  -o, --filename <atlas_path>   filename of font textures (defaut: font-face)
+                                font filename always set to font-face name
+  -s, --font-size <fontSize>    font size for generated textures (default: 42)
+  -i, --charset-file <charset>  user-specified charactors from text-file
+  -m, --texture-size <w,h>      ouput texture atlas size (default: [2048,2048])
+  -p, --texture-padding <n>     padding between glyphs (default: 1)
+  -b, --border <n>              space between glyphs textures & edge (default: 0)
+  -r, --distance-range <n>      distance range for SDF (default: 4)
+  -t, --field-type <type>       msdf(default) | sdf | psdf (default: "msdf")
+  -d, --round-decimal <digit>   rounded digits of the output font file. (default: 0)
+  -v, --vector                  generate svg vector file for debuging
+  -u, --reuse [file.cfg]        save/create config file for reusing settings (default: false)
+      --smart-size              shrink atlas to the smallest possible square
+      --pot                     atlas size shall be power of 2
+      --square                  atlas size shall be square
+      --rot                     allow 90-degree rotation while packing
+      --rtl                     use RTL(Arabic/Persian) charactors fix
+  -h, --help                    output usage information
 ```
 
 ### CLI Examples
