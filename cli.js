@@ -54,14 +54,18 @@ const fontDir = path.dirname(fontFile);
 // need to feed manually
 //
 opt.fontFile = fontFile;
-opt.filename = utils.valueQueue([opt.filename, path.join(fontDir, fontface)]);
-opt.vector = utils.valueQueue([opt.vector, false]);
-opt.reuse = utils.valueQueue([opt.reuse, false]);
-opt.smartSize = utils.valueQueue([opt.smartSize, false]);
-opt.pot = utils.valueQueue([opt.pot, false]);
-opt.square = utils.valueQueue([opt.square, false]);
-opt.rot = utils.valueQueue([opt.rot, false]);
-opt.rtl = utils.valueQueue([opt.rtl, false]);
+if (typeof opt.reuse === 'boolean') {
+  opt.filename = utils.valueQueue([opt.filename, path.join(fontDir, fontface)]);
+  opt.vector = utils.valueQueue([opt.vector, false]);
+  opt.reuse = utils.valueQueue([opt.reuse, false]);
+  opt.smartSize = utils.valueQueue([opt.smartSize, false]);
+  opt.pot = utils.valueQueue([opt.pot, false]);
+  opt.square = utils.valueQueue([opt.square, false]);
+  opt.rot = utils.valueQueue([opt.rot, false]);
+  opt.rtl = utils.valueQueue([opt.rtl, false]);
+} else {
+  opt.filename = utils.valueQueue([opt.filename, path.join("./", fontface)]);
+}
 
 //
 // Display options 
@@ -71,9 +75,10 @@ const padding = longestLength(keys) + 2;
 console.log("\nUsing following settings");
 console.log("========================================");
 keys.forEach(key => {
-  if (key === 'charsetFile' && typeof opt[key] === 'undefined') {
+  if (typeof opt.reuse === 'string' && typeof opt[key] === 'undefined') {
+    console.log(pad(key, padding) + ": Defined in [" + opt.reuse + "]");
+  } else if (key === 'charsetFile' && typeof opt[key] === 'undefined') {
     console.log(pad(key, padding) + ": Unspecified, fallback to ASC-II");
-
   } else console.log(pad(key, padding) + ": " + opt[key]);
 });
 console.log("========================================");

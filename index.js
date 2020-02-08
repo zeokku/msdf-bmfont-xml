@@ -69,10 +69,10 @@ function generateBMFont (fontPath, opt, callback) {
   let reuse, cfg = {};
   if (typeof opt.reuse !== 'undefined' && typeof opt.reuse !== 'boolean') {
     if (!fs.existsSync(opt.reuse)) {
-      console.log('Creating cfg file :' + opt.reuse);
+      console.log('Creating cfg file : ' + opt.reuse);
       reuse = {};
     } else {
-      console.log('Loading cfg file :' + opt.reuse);
+      console.log('Loading cfg file : ' + opt.reuse);
       cfg = JSON.parse(fs.readFileSync(opt.reuse, 'utf8'));
       reuse = cfg.opt;
     }
@@ -189,12 +189,14 @@ function generateBMFont (fontPath, opt, callback) {
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));
         let imgPath = path.join(fontDir, `${texname}.png`);
+        // let imgPath = `${texname}.png`;
         console.log('Loading previous image : ', imgPath);
         const loader = Jimp.read(imgPath);
         loader.catch(err => {
           console.warn("File read error: ", err);
         });
-        img = await loader;
+        const prevImg = await loader;
+        img.composite(prevImg, 0, 0);
       }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
