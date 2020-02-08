@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
-const pjson = require('./package.json');
+const pkg = require('./package.json');
 const generateBMFont = require('./index');
 const fs = require('fs');
 const path = require('path');
 const handlebars = require('handlebars');
 const args = require('commander');
+const updateNotifier = require('update-notifier');
 const utils = require('./lib/utils');
+
+updateNotifier({pkg}).notify();
 
 let fontFile;
 args
-  .version('msdf-bmfont-xml v' + pjson.version)
+  .version('msdf-bmfont-xml v' + pkg.version)
   .usage('[options] <font-file>')
   .arguments('<font_file>')
   .description('Creates a BMFont compatible bitmap font of signed distance fields from a font file')
