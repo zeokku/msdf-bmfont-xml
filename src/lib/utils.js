@@ -1,6 +1,6 @@
 "use strict";
 
-const js2xmlparser = require('js2xmlparser');
+import { parse } from 'js2xmlparser';
 const js2xmlOption = { format: { doubleQuotes: true } };
 
 /**
@@ -15,7 +15,8 @@ function valueQueue(array) {
     }
   }
 }
-exports.valueQueue = valueQueue;
+const _valueQueue = valueQueue;
+export { _valueQueue as valueQueue };
 
 /**
  * Round all number value in a javascript object at given decimal
@@ -24,17 +25,18 @@ exports.valueQueue = valueQueue;
  * @param {number} [decimal=0] - Round at this decimal 
  * @param {boolean} [strict=false] - set to `true` won't try to cast `string` to `number`  
  */
-function roundAllValue (obj, decimal = 0, strict = false) {
+function roundAllValue(obj, decimal = 0, strict = false) {
   Object.keys(obj).forEach(key => {
-    if (typeof(obj[key]) === "object" && obj[key] !== null) {
-      roundAllValue (obj[key], decimal, strict);
-    } else if(isNumeric(obj[key], strict)) {
+    if (typeof (obj[key]) === "object" && obj[key] !== null) {
+      roundAllValue(obj[key], decimal, strict);
+    } else if (isNumeric(obj[key], strict)) {
       const num = parseFloat(obj[key]);
       obj[key] = roundNumber(num, decimal);
     }
   });
 }
-exports.roundAllValue = roundAllValue;
+const _roundAllValue = roundAllValue;
+export { _roundAllValue as roundAllValue };
 
 /**
  * Round a given value at desire decimal
@@ -44,18 +46,19 @@ exports.roundAllValue = roundAllValue;
  * @return {number}
  */
 function roundNumber(num, scale) {
-  if(!("" + num).includes("e")) {
-    return +(Math.round(num + "e+" + scale)  + "e-" + scale);
+  if (!("" + num).includes("e")) {
+    return +(Math.round(num + "e+" + scale) + "e-" + scale);
   } else {
     const arr = ("" + num).split("e");
     let sig = ""
-    if(+arr[1] + scale > 0) {
+    if (+arr[1] + scale > 0) {
       sig = "+";
     }
     return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
   }
 }
-exports.roundNumber = roundNumber;
+const _roundNumber = roundNumber;
+export { _roundNumber as roundNumber };
 
 /**
  * Stringify javascript object to BMFont compatible json or xml
@@ -71,7 +74,8 @@ function stringify(data, outputType) {
     return toBMFontXML(data);
   }
 }
-exports.stringify = stringify;
+const _stringify = stringify;
+export { _stringify as stringify };
 
 function toJSON(data) {
   return JSON.stringify(data, null, 4);
@@ -79,7 +83,7 @@ function toJSON(data) {
 
 function toBMFontXML(data) {
   let xmlData = {};
-  
+
   // Reorganize data structure
   // Definition: http://www.angelcode.com/products/bmfont/doc/file_format.html
 
@@ -89,7 +93,7 @@ function toBMFontXML(data) {
   xmlData.info['@'].padding = stringifyArray(data.info.padding, ',');
   xmlData.info['@'].spacing = stringifyArray(data.info.spacing, ',');
   // xmlData.info['@'].charset = stringifyArray(data.info.charset);
-  xmlData.info['@'].charset = ""; 
+  xmlData.info['@'].charset = "";
 
   // common section
   xmlData.common = {};
@@ -97,10 +101,10 @@ function toBMFontXML(data) {
 
   // pages section, page shall be inserted later in module function callback
   xmlData.pages = {};
-  xmlData.pages.page = []; 
+  xmlData.pages.page = [];
   data.pages.forEach((p, i) => {
     let page = {};
-    page['@'] = {id: i, file: p};
+    page['@'] = { id: i, file: p };
     xmlData.pages.page.push(page);
   });
 
@@ -109,17 +113,17 @@ function toBMFontXML(data) {
   xmlData.distanceField['@'] = data.distanceField;
 
   // chars section
-  xmlData.chars = {'@': {}};
+  xmlData.chars = { '@': {} };
   xmlData.chars['@'].count = data.chars.length;
   xmlData.chars.char = [];
-  data.chars.forEach(c =>{
+  data.chars.forEach(c => {
     let char = {};
     char['@'] = c;
     xmlData.chars.char.push(char);
   });
 
   // kernings section
-  xmlData.kernings = {'@': {}};
+  xmlData.kernings = { '@': {} };
   xmlData.kernings['@'].count = data.kernings.length;
   xmlData.kernings.kerning = [];
   data.kernings.forEach(k => {
@@ -127,8 +131,8 @@ function toBMFontXML(data) {
     kerning['@'] = k;
     xmlData.kernings.kerning.push(kerning);
   });
-  
-  return js2xmlparser.parse("font", xmlData, js2xmlOption);
+
+  return parse("font", xmlData, js2xmlOption);
 }
 
 /**
@@ -143,13 +147,14 @@ function stringifyArray(array, seperator = "") {
   let lastIndex = array.length - 1;
   array.forEach((element, index) => {
     result += element;
-    if (index !== lastIndex){
+    if (index !== lastIndex) {
       result += seperator;
     }
   });
   return result;
 }
-exports.stringifyArray = stringifyArray;
+const _stringifyArray = stringifyArray;
+export { _stringifyArray as stringifyArray };
 
 /**
  * Tell if the given object is string 
@@ -157,10 +162,11 @@ exports.stringifyArray = stringifyArray;
  * @param {any} n 
  * @returns {boolean} 
  */
-function isString (s) {
+function isString(s) {
   return (typeof s === 'string' || s instanceof String);
 }
-exports.isString = isString;
+const _isString = isString;
+export { _isString as isString };
 
 /**
  * Tell if the given object is numeric 
@@ -169,10 +175,11 @@ exports.isString = isString;
  * @param {boolean} [strict=false] strict casting
  * @returns {boolean} 
  */
-function isNumeric (n, strict = false) {
+function isNumeric(n, strict = false) {
   return !(isString(n) && strict) && !isNaN(parseFloat(n)) && isFinite(n);
 }
-exports.isNumeric = isNumeric;
+const _isNumeric = isNumeric;
+export { _isNumeric as isNumeric };
 
 /**
  * Tell if the given object is empty
@@ -180,13 +187,14 @@ exports.isNumeric = isNumeric;
  * @param {any} obj 
  * @returns 
  */
-function isEmpty (obj) {
+function isEmpty(obj) {
   if (Object.getOwnPropertyNames(obj).length > 0) return false;
   else return true;
 }
-exports.isEmpty = isEmpty;
+const _isEmpty = isEmpty;
+export { _isEmpty as isEmpty };
 
-function insidePath (command, contours) {
+function insidePath(command, contours) {
   let x = command.x, y = command.y;
   let inside = false;
   contours.forEach(contour => {
@@ -202,17 +210,17 @@ function insidePath (command, contours) {
   return inside;
 }
 
-function isClockwise (contour) {
+function isClockwise(contour) {
   let sum = 0;
   for (let i = 0; i < contour.length - 1; i++) {
-      let command = contour[i], command_next = contour[i+1];
-      if(command_next.type == 'Z') break;
-      sum += (command_next.x - command.x) * (command_next.y + command.y);
+    let command = contour[i], command_next = contour[i + 1];
+    if (command_next.type == 'Z') break;
+    sum += (command_next.x - command.x) * (command_next.y + command.y);
   }
   return sum > 0
 }
 
-function reverseContour (contour) {
+function reverseContour(contour) {
   let reversedContour = [];
   let tmpPoint = [];
   let hasCloseCmd = false;
@@ -227,7 +235,7 @@ function reverseContour (contour) {
     }
     if (isFirstCmd) {
       isFirstCmd = false;
-      reversedContour.push({type: 'M', x: command.x, y: command.y});
+      reversedContour.push({ type: 'M', x: command.x, y: command.y });
     }
     rev_comand.type = command.type;
     rev_comand.x = contour[i - 1].x;
@@ -244,7 +252,7 @@ function reverseContour (contour) {
     reversedContour.push(rev_comand);
   }
   if (hasCloseCmd) {
-    reversedContour.push({type: 'Z'});
+    reversedContour.push({ type: 'Z' });
   }
   return reversedContour;
 }
@@ -262,17 +270,18 @@ function alignClockwise(contours, direction) {
     let restContours = contours.slice(0);
     restContours.splice(i, 1);
     if (contour.length === 0) continue;
-    let isInside =  insidePath(contour[0], restContours) && 
-                    insidePath(contour[Math.ceil(contour.length / 2)], restContours);
+    let isInside = insidePath(contour[0], restContours) &&
+      insidePath(contour[Math.ceil(contour.length / 2)], restContours);
     let dir = isInside ? (!direction) : direction;
     if (isClockwise(contour) != dir) {
       contours[i] = reverseContour(contour);
-      numReversed ++;
+      numReversed++;
     }
   }
   return numReversed;
 }
-exports.alignClockwise = alignClockwise; 
+const _alignClockwise = alignClockwise;
+export { _alignClockwise as alignClockwise };
 
 /**
  * Convert contour commands to msdfgen shape description 
@@ -289,7 +298,7 @@ function stringifyContours(contours) {
     contour.forEach((command, index) => {
       roundAllValue(command, 3);
       if (command.type === 'Z') {
-        if(contour[0].x !== _x || contour[0].y !== _y) {
+        if (contour[0].x !== _x || contour[0].y !== _y) {
           shapeDesc += '# ';
         }
       } else {
@@ -310,14 +319,16 @@ function stringifyContours(contours) {
   });
   return shapeDesc;
 }
-exports.stringifyContours = stringifyContours;
+const _stringifyContours = stringifyContours;
+export { _stringifyContours as stringifyContours };
 
 let pointTolerance = 0.5, areaTolerance = 2;
 function setTolerance(pointValue, areaValue) {
   pointTolerance = pointValue;
   areaTolerance = areaValue;
 }
-exports.setTolerance = setTolerance;
+const _setTolerance = setTolerance;
+export { _setTolerance as setTolerance };
 
 function same(p1, p2) {
   return Math.abs(p1[0] - p2[0]) < pointTolerance && Math.abs(p1[1] - p2[1]) < pointTolerance;
@@ -331,7 +342,7 @@ class boundBox {
     this.bottom = bottom;
     this.updateSize();
   }
- 
+
   updateSize() {
     this.width = this.right - this.left;
     this.height = this.top - this.bottom;
@@ -350,38 +361,39 @@ class boundBox {
     return this.width * this.height;
   }
 }
-module.exports.boundBox = boundBox;
+const _boundBox = boundBox;
+export { _boundBox as boundBox };
 
 function degenerate(p) {
-  for (let i = 0; i < p.length - 1; i++) 
+  for (let i = 0; i < p.length - 1; i++)
     if (same(p[i], p[i + 1])) p.splice(i, 1);
   return p.length;
-} 
+}
 
 function isDegenerate(contour) {
   if (contour.length < 3) return true; // early quit with 0-area contour
-  let bBox = new boundBox(contour[0].x, contour[0].y,contour[0].x, contour[0].y);
+  let bBox = new boundBox(contour[0].x, contour[0].y, contour[0].x, contour[0].y);
   for (let i = 0; i < contour.length - 1; i++) {
     let command_prev = contour[i];
     bBox.update(command_prev.x, command_prev.y);
     let command = contour[i + 1];
     let p = [[command_prev.x, command_prev.y]];
-    if (command.type === 'C') { p.push([command.x1, command,y1]); p.push([command.x2, command.y2]); }
+    if (command.type === 'C') { p.push([command.x1, command, y1]); p.push([command.x2, command.y2]); }
     else if (command.type === 'Q') p.push([command.x1, command.y1]);
     if (command.type === 'Z') p.push([contour[0].x, contour[0].y]);
-    else p.push([command.x, command.y]); 
-    
+    else p.push([command.x, command.y]);
+
     let _nump = p.length;
     let nump = degenerate(p);
     if (nump < 2) {
       if (i === contour.length - 2 || command.type === 'Z') contour.splice(i, 1);
       else contour.splice(i + 1, 1);
       continue;
-    } 
+    }
     // if point not degenerated, continue
     if (nump === _nump) continue;
     let newCommand = {};
-    if (nump === 3) { 
+    if (nump === 3) {
       newCommand.type = 'Q';
       newCommand.x1 = p[1][0];
       newCommand.y1 = p[1][1];
@@ -404,14 +416,15 @@ function isDegenerate(contour) {
 function filterContours(contours) {
   let filtered = 0;
   for (let i = 0; i < contours.length; i++) {
-    if(isDegenerate(contours[i])) {
+    if (isDegenerate(contours[i])) {
       contours.splice(i, 1);
-      filtered ++;
+      filtered++;
     }
   }
   return filtered;
 }
-exports.filterContours = filterContours;
+const _filterContours = filterContours;
+export { _filterContours as filterContours };
 
 /**
  * Returns an ArrayBuffer representing the exact content of a Buffer.
@@ -424,7 +437,8 @@ exports.filterContours = filterContours;
  * @return {ArrayBuffer}
  */
 function bufferToArrayBuffer(buffer) {
-  const {byteOffset, byteLength} = buffer;
+  const { byteOffset, byteLength } = buffer;
   return buffer.buffer.slice(byteOffset, byteOffset + byteLength);
 }
-exports.bufferToArrayBuffer = bufferToArrayBuffer;
+const _bufferToArrayBuffer = bufferToArrayBuffer;
+export { _bufferToArrayBuffer as bufferToArrayBuffer };

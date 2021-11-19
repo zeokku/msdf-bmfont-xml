@@ -1,16 +1,21 @@
-const utils = require("./lib/utils");
-const reshaper = require("arabic-persian-reshaper").ArabicShaper;
-const opentype = require("opentype.js");
-const exec = require("child_process").exec;
-const mapLimit = require("map-limit");
-const MaxRectsPacker = require("maxrects-packer").MaxRectsPacker;
-const path = require("path");
-const ProgressBar = require("cli-progress");
-const fs = require("fs");
-const buffer = require("buffer").Buffer;
-const Jimp = require("jimp");
-const readline = require("readline");
-const assert = require("assert");
+import * as utils from "./lib/utils.js";
+import ArabicPersianResharperPkg from "arabic-persian-reshaper";
+const { ArabicShaper: reshaper } = ArabicPersianResharperPkg;
+import opentype from "opentype.js";
+import { exec } from "child_process";
+import mapLimit from "map-limit";
+import MaxRectsPackerPackage from "maxrects-packer";
+const { MaxRectsPacker } = MaxRectsPackerPackage;
+import path from "path";
+import { fileURLToPath } from "url";
+import ProgressBar from "cli-progress";
+import fs from "fs";
+import { Buffer } from "buffer";
+import Jimp from "jimp";
+import readline from "readline";
+import assert from "assert";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const defaultCharset =
   " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split(
@@ -20,11 +25,62 @@ const controlChars = ["\n", "\r", "\t"];
 
 const binaryLookup = {
   darwin: "msdfgen.osx",
-  win32: "msdfgen.exe",
+  win32: "msdfgen_1-9-1.exe",
   linux: "msdfgen.linux",
 };
 
-module.exports = generateBMFont;
+type Options = Partial<{
+  filename: string;
+  outDir: string;
+
+  outputType: "xml" | "json";
+
+  charset: string;
+  fontSize: number;
+  fontSpacing: number;
+  fontPadding: number;
+
+  texturePadding: number;
+  textureSize: [number, number];
+  textureWidth: number;
+  textureHeight: number;
+
+  distanceRange: number;
+  fieldType: "msdf" | "sdf" | "psdf" | "mtsdf";
+  roundDecimal: number;
+
+  smartSize: boolean;
+  pot: boolean;
+  square: boolean;
+  rot: boolean;
+  rtl: boolean;
+  border: any;
+  vector: any;
+  tolerance: any;
+
+  reuse: boolean | string;
+}>;
+
+interface Texture {
+  filename: string;
+  texture: Buffer;
+
+  svg?: any;
+}
+
+type Settings = Partial<{
+  packer: any;
+  pages: any;
+  opt: Options;
+}>;
+
+interface Font {
+  filename: string;
+  data: string;
+  settings: Settings;
+}
+
+type Callback = (error: string, textures?: Texture[], font?: Font) => void;
 
 /**
  * Creates a BMFont compatible bitmap font of signed distance fields from a font file
@@ -48,7 +104,8 @@ module.exports = generateBMFont;
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font)
  *
  */
-function generateBMFont(fontPath, opt, callback) {
+
+export default function generateBMFont(fontPath, opt: Options | Callback, callback?: Callback) {
   if (typeof opt === "function") {
     callback = opt;
     opt = {};
@@ -74,12 +131,13 @@ function generateBMFont(fontPath, opt, callback) {
   );
 
   // Set fallback output path to font path
-  let fontDir = typeof fontPath === "string" ? path.dirname(fontPath) : "";
-  const binaryPath = path.join(__dirname, "bin", process.platform, binName);
+  let fontDir = opt.outDir ?? (typeof fontPath === "string" ? path.dirname(fontPath) : "");
+
+  const binaryPath = path.join(__dirname, "../bin", process.platform, binName);
 
   // const reuse = (typeof opt.reuse === 'boolean' || typeof opt.reuse === 'undefined') ? {} : opt.reuse.opt;
   let reuse,
-    cfg = {};
+    cfg: Settings = {};
   if (typeof opt.reuse !== "undefined" && typeof opt.reuse !== "boolean") {
     if (!fs.existsSync(opt.reuse)) {
       console.log("Creating cfg file : " + opt.reuse);
@@ -183,7 +241,7 @@ function generateBMFont(fontPath, opt, callback) {
   }
 
   // Initialize settings
-  let settings = {};
+  let settings: Settings = {};
   settings.opt = JSON.parse(JSON.stringify(opt));
   delete settings.opt["reuse"]; // prune previous settings
   let pages = [];
@@ -275,7 +333,7 @@ function generateBMFont(fontPath, opt, callback) {
           chars.push(rect.data.fontData);
         });
         const buffer = await img.getBufferAsync(Jimp.MIME_PNG);
-        let tex = {
+        let tex: Texture = {
           filename: path.join(fontDir, texname),
           texture: buffer,
         };
@@ -336,16 +394,19 @@ function generateBMFont(fontPath, opt, callback) {
         kernings: kernings,
       };
       if (roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal, true);
-      let fontFile = {};
-      const ext = outputType === "json" ? `.json` : `.fnt`;
-      fontFile.filename = path.join(fontDir, fontface + ext);
-      fontFile.data = utils.stringify(fontData, outputType);
 
       // Store pages name and available packer freeRects in settings
       settings.pages = pages;
       settings.packer = {};
       settings.packer.bins = packer.save();
-      fontFile.settings = settings;
+
+      const ext = outputType === "json" ? `.json` : `.fnt`;
+
+      let fontFile: Font = {
+        filename: path.join(fontDir, fontface + ext),
+        data: utils.stringify(fontData, outputType),
+        settings: settings,
+      };
 
       console.log("\nGeneration complete!\n");
       callback(null, asyncTextures, fontFile);
@@ -353,9 +414,9 @@ function generateBMFont(fontPath, opt, callback) {
   );
 }
 
-function generateImage(opt, callback) {
-  const {
-    binaryPath,
+function generateImage(
+  {
+    binaryPath, //
     font,
     char,
     fontSize,
@@ -364,7 +425,9 @@ function generateImage(opt, callback) {
     roundDecimal,
     debug,
     tolerance,
-  } = opt;
+  },
+  callback
+) {
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -430,7 +493,7 @@ function generateImage(opt, callback) {
     let imageData;
     if (isNaN(channelCount) || !rawImageData.some((x) => x !== 0)) {
       // if character is blank
-      readline.clearLine(process.stdout);
+      readline.clearLine(process.stdout, 0); //@todo wut dir?
       readline.cursorTo(process.stdout, 0);
       console.log(
         `Warning: no bitmap for character '${char}' (${char.charCodeAt(

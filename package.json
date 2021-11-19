@@ -2,7 +2,11 @@
   "name": "msdf-bmfont-xml",
   "version": "2.5.4",
   "description": "Creates a BMFont compatible bitmap font of Signed-Distance Fields from a font file",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "msdf-bmfont": "dist/cli.js"
+  },
   "scripts": {
     "debug": "cd test/assets/fonts && node --inspect-brk=9229 ../../../cli.js -f json -o font -u -m 512,256 -t msdf -s 42 -r 5 -p 2 --smart-size --pot ../../../assets/fonts/DIN_CB.ttf",
     "test": "npm run test:disk && npm run test:memory",
@@ -13,9 +17,6 @@
     "test:reuse": "cd test/assets/fonts && node --inspect-brk=9229 ../../../cli.js -u DIN_CB.cfg ../../../assets/fonts/FiraSansMedium.woff",
     "render": "npm run test:disk && node test/test.js",
     "version": "standard-version"
-  },
-  "bin": {
-    "msdf-bmfont": "./cli.js"
   },
   "author": {
     "name": "YM Shen",
@@ -70,7 +71,7 @@
     "three": "^0.102.1",
     "three-bmfont-text": "^2.3.0",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.3333",
+    "typescript": "^4.5.2",
     "xml2js": "^0.4.19"
   },
   "config": {
