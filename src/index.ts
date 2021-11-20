@@ -29,7 +29,7 @@ const binaryLookup = {
   linux: "msdfgen.linux",
 };
 
-type Options = Partial<{
+export type Options = Partial<{
   filename: string;
   outDir: string;
 
@@ -37,8 +37,8 @@ type Options = Partial<{
 
   charset: string;
   fontSize: number;
-  fontSpacing: number;
-  fontPadding: number;
+  fontSpacing: [number, number];
+  fontPadding: [number, number, number, number];
 
   texturePadding: number;
   textureSize: [number, number];
@@ -516,7 +516,7 @@ function generateImage(
           width: width,
           height: height,
           xoffset: Math.round(bBox.x1) - pad,
-          yoffset: Math.round(bBox.y1) + pad + baseline,
+          yoffset: Math.round(bBox.y1) - pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15,
         },
