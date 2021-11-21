@@ -291,7 +291,7 @@ export default function generateBMFont(fontPath, opt: Options | Callback, callba
       const textures = packer.bins.map(async (bin, index) => {
         let svg = "";
         let texname = "";
-        let fillColor = fieldType === "msdf" ? 0x000000ff : 0x00000000;
+        let fillColor = 0x00000000; //fieldType === "msdf" ? 0x000000ff : 0x00000000;
         let img = new Jimp(bin.width, bin.height, fillColor);
         if (index > pages.length - 1) {
           if (packer.bins.length > 1) texname = `${filename}.${index}`;
